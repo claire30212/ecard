@@ -74,6 +74,7 @@ export default function DecorationEditorModal({ card, adminKey, onClose, onSaved
         colorTheme: card.color_theme,
         colorAdjust: card.color_adjust,
         decorations,
+        layoutStyle: card.layout_style,
       })
       if (ok) {
         onSaved(decorations)

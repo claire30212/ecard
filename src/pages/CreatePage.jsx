@@ -78,6 +78,7 @@ export default function CreatePage({ onViewCard }) {
         color_theme: colorTheme,
         color_adjust: colorAdjust,
         decorations: [],
+        layout_style: 'collage',
       })
 
       setResult({ id: cardId, adminKey: admin_key })

@@ -6,7 +6,7 @@ export async function fetchCard(cardId) {
   const { data, error } = await supabase
     .from('ecard_cards_public')
     .select(
-      'id, category, style, recipient_name, cover_photo_url, blessing_message, show_blessing, creator_signature, show_signature, created_at, color_theme, color_adjust, decorations'
+      'id, category, style, recipient_name, cover_photo_url, blessing_message, show_blessing, creator_signature, show_signature, created_at, color_theme, color_adjust, decorations, layout_style'
     )
     .eq('id', cardId)
     .maybeSingle()
@@ -82,6 +82,7 @@ export async function editCardSettings({
   colorTheme,
   colorAdjust,
   decorations,
+  layoutStyle,
 }) {
   const { data, error } = await supabase.rpc('edit_card_settings', {
     p_card_id: cardId,
@@ -95,6 +96,7 @@ export async function editCardSettings({
     p_color_theme: colorTheme,
     p_color_adjust: colorAdjust,
     p_decorations: decorations,
+    p_layout_style: layoutStyle,
   })
   if (error) throw error
   return data === true

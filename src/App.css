@@ -499,6 +499,22 @@
   gap: 14px;
   text-align: center;
   max-width: 420px;
+  animation: coverEnter 0.8s ease-out;
+}
+@keyframes coverEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cover {
+    animation: none;
+  }
 }
 .cover__visual {
   position: relative;
@@ -594,6 +610,49 @@
     0 14px 30px rgba(0, 0, 0, 0.15);
 }
 
+/* ===== 開卡飄浮特效：依類別，播一次即停 ===== */
+.floating-effect {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+.floating-effect__particle {
+  position: absolute;
+  top: -12%;
+  color: var(--accent, #c9a97e);
+  opacity: 0;
+  animation-name: floatDown;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+.floating-effect__icon {
+  width: 100%;
+  height: 100%;
+}
+@keyframes floatDown {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(var(--drift, 0), 130vh) rotate(180deg);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .floating-effect {
+    display: none;
+  }
+}
+
 .scroll-hint {
   position: absolute;
   bottom: 28px;
@@ -631,6 +690,24 @@
   grid-template-columns: 1fr;
   gap: 14px;
   align-items: start;
+}
+.message-wall__grid--loose {
+  gap: 22px;
+}
+.message-wall__grid--timeline {
+  gap: 16px;
+}
+.message-wall__group {
+  margin-bottom: 28px;
+}
+.message-wall__group:last-child {
+  margin-bottom: 0;
+}
+.message-wall__group-heading {
+  font-family: 'Caveat', 'Zhi Mang Xing', cursive;
+  font-size: 1.4rem;
+  color: var(--ink, #5c4a3a);
+  margin-bottom: 12px;
 }
 
 .fab-add {
@@ -1115,14 +1192,26 @@
   .style-card {
     flex: 1;
   }
-  /* 平板起改用 Masonry 瀑布流，卡片間距縮小、允許輕微重疊堆疊，營造貼滿一面牆的密度感 */
-  .message-wall__grid {
+  /* 平板起「緊密拼貼版」改用 Masonry 瀑布流，卡片間距縮小、允許輕微重疊堆疊 */
+  .message-wall__grid--collage {
     display: block;
     columns: 2;
     column-gap: 14px;
   }
-  .message-wall__grid > .msg-card {
+  .message-wall__grid--collage > .msg-card {
     margin-bottom: 14px;
+  }
+  /* 「鬆散錯落版」「依時間整齊排列」改用標準 grid，欄數固定、不重疊，
+     在各裝置寬度下最不容易跑版 */
+  .message-wall__grid--loose {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+  }
+  .message-wall__grid--timeline {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
   }
   .msg-card {
     transform: rotate(var(--tilt, 0deg)) translateY(var(--stack-offset, 0));
@@ -1140,9 +1229,17 @@
   .create-page {
     max-width: 720px;
   }
-  .message-wall__grid {
+  .message-wall__grid--collage {
     columns: 3;
     column-gap: 16px;
+  }
+  .message-wall__grid--loose {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 34px;
+  }
+  .message-wall__grid--timeline {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
   }
   .message-wall__inner {
     padding: 0 24px;

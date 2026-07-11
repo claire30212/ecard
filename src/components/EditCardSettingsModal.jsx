@@ -60,6 +60,7 @@ export default function EditCardSettingsModal({ card, categoryId, adminKey, onCl
         colorTheme,
         colorAdjust,
         decorations: card.decorations || [],
+        layoutStyle: card.layout_style,
       })
 
       if (ok) {

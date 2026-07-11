@@ -45,3 +45,17 @@ export function computeStackOffset(layoutSeed) {
   const [r1] = seededRandoms((layoutSeed || 0) + 0.71, 1)
   return (r1 * 2 - 1) * 16
 }
+
+// 依「換排列方式」選的 layout_style 決定卡片實際要用的傾斜/堆疊位移幅度：
+// collage/grouped 沿用原本拼貼感；loose 傾斜縮小、不堆疊；timeline 完全水平、不堆疊
+export function computeLayoutTransform(layoutStyle, layoutSeed) {
+  if (layoutStyle === 'timeline') {
+    return { tilt: 0, stackOffset: 0 }
+  }
+  const tilt = computeCardTilt(layoutSeed)
+  const stackOffset = computeStackOffset(layoutSeed)
+  if (layoutStyle === 'loose') {
+    return { tilt: tilt * 0.45, stackOffset: 0 }
+  }
+  return { tilt, stackOffset }
+}

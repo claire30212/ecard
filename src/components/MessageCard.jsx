@@ -1,4 +1,4 @@
-import { computePhotoLayout, computeCardTilt, computeStackOffset } from '../lib/layout'
+import { computePhotoLayout, computeLayoutTransform } from '../lib/layout'
 import StickerIcon from './StickerIcon'
 
 function formatDate(iso) {
@@ -6,9 +6,8 @@ function formatDate(iso) {
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`
 }
 
-export default function MessageCard({ message, category, style, isAdmin, onEdit, onDelete, justAdded }) {
-  const tilt = computeCardTilt(message.layout_seed)
-  const stackOffset = computeStackOffset(message.layout_seed)
+export default function MessageCard({ message, category, style, layoutStyle, isAdmin, onEdit, onDelete, justAdded }) {
+  const { tilt, stackOffset } = computeLayoutTransform(layoutStyle, message.layout_seed)
   const photoTransform = message.photo_url
     ? computePhotoLayout(category.photoLayout, message.layout_seed)
     : null

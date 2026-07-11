@@ -12,6 +12,8 @@ import EditMessageModal from '../components/EditMessageModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import DecorationEditorModal from '../components/DecorationEditorModal'
 import EditCardSettingsModal from '../components/EditCardSettingsModal'
+import LayoutPickerModal from '../components/LayoutPickerModal'
+import FloatingEffect from '../components/FloatingEffect'
 
 export default function ViewPage({ cardId, adminKeyFromUrl }) {
   const [card, setCard] = useState(null)
@@ -26,6 +28,7 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   const [banner, setBanner] = useState('')
   const [showDecorationEditor, setShowDecorationEditor] = useState(false)
   const [showCardSettings, setShowCardSettings] = useState(false)
+  const [showLayoutPicker, setShowLayoutPicker] = useState(false)
   const wallRef = useRef(null)
 
   useEffect(() => {
@@ -119,6 +122,9 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
             <button type="button" className="btn-chip btn-chip--on-dark" onClick={() => setShowCardSettings(true)}>
               編輯卡片設定
             </button>
+            <button type="button" className="btn-chip btn-chip--on-dark" onClick={() => setShowLayoutPicker(true)}>
+              換排列方式
+            </button>
           </div>
         </div>
       )}
@@ -126,6 +132,7 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
       <section className={`cover-section cover-section--${style.id}`}>
         <DoodleScatter categoryId={category.id} className={`doodle-scatter--${style.id}`} />
         <DecorationLayer decorations={card.decorations} zone="cover" />
+        <FloatingEffect categoryId={category.id} />
         <Cover
           category={category}
           style={style}
@@ -144,6 +151,7 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
           messages={messages}
           category={category}
           style={style}
+          layoutStyle={card.layout_style}
           isAdmin={isAdmin}
           recipientName={card.recipient_name}
           decorations={card.decorations}
@@ -203,6 +211,19 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
             setCard((prev) => ({ ...prev, ...updates }))
             setShowCardSettings(false)
             showBanner('卡片設定已更新')
+          }}
+        />
+      )}
+
+      {showLayoutPicker && (
+        <LayoutPickerModal
+          card={card}
+          adminKey={adminKeyFromUrl}
+          onClose={() => setShowLayoutPicker(false)}
+          onSaved={(layoutStyle) => {
+            setCard((prev) => ({ ...prev, layout_style: layoutStyle }))
+            setShowLayoutPicker(false)
+            showBanner('排列方式已更新')
           }}
         />
       )}
