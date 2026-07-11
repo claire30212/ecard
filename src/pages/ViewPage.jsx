@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { fetchCard, fetchCardAdminKey, fetchMessages, addMessage, editMessage, deleteMessage } from '../lib/cards'
+import { fetchCard, verifyAdminKey, fetchMessages, addMessage, editMessage, deleteMessage } from '../lib/cards'
 import { getCategory, getStyle } from '../lib/constants'
 import Cover from '../components/Cover'
 import ScrollHint from '../components/ScrollHint'
 import MessageWall from '../components/MessageWall'
+import DoodleScatter from '../components/DoodleScatter'
 import MessageForm from '../components/MessageForm'
 import EditMessageModal from '../components/EditMessageModal'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -14,7 +15,6 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [realAdminKey, setRealAdminKey] = useState(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingMessage, setEditingMessage] = useState(null)
   const [deletingMessage, setDeletingMessage] = useState(null)
@@ -40,12 +40,9 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
         setMessages(msgs)
 
         if (adminKeyFromUrl) {
-          const realKey = await fetchCardAdminKey(cardId)
+          const verified = await verifyAdminKey({ cardId, adminKey: adminKeyFromUrl })
           if (cancelled) return
-          if (realKey && realKey === adminKeyFromUrl) {
-            setIsAdmin(true)
-            setRealAdminKey(realKey)
-          }
+          if (verified) setIsAdmin(true)
         }
       } catch {
         if (!cancelled) setNotFound(true)
@@ -73,7 +70,7 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   }
 
   async function handleEditSubmitted(messageId, { content, photoUrl }) {
-    const ok = await editMessage({ messageId, adminKey: realAdminKey, content, photoUrl })
+    const ok = await editMessage({ messageId, adminKey: adminKeyFromUrl, content, photoUrl })
     if (ok) {
       setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, content, photo_url: photoUrl, updated_at: new Date().toISOString() } : m)))
       setEditingMessage(null)
@@ -85,7 +82,7 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
     const target = deletingMessage
     setDeletingMessage(null)
     try {
-      const ok = await deleteMessage({ messageId: target.id, adminKey: realAdminKey })
+      const ok = await deleteMessage({ messageId: target.id, adminKey: adminKeyFromUrl })
       if (ok) {
         setMessages((prev) => prev.filter((m) => m.id !== target.id))
       } else {
@@ -106,7 +103,8 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
     <div className={`view-page view-page--${category.id}`}>
       {isAdmin && <div className="admin-banner">管理模式：可編輯、刪除留言</div>}
 
-      <section className="cover-section">
+      <section className={`cover-section cover-section--${style.id}`}>
+        <DoodleScatter categoryId={category.id} className={`doodle-scatter--${style.id}`} />
         <Cover
           category={category}
           style={style}

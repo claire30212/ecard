@@ -1,4 +1,4 @@
-import { computePhotoLayout, computeCardTilt } from '../lib/layout'
+import { computePhotoLayout, computeCardTilt, computeStackOffset } from '../lib/layout'
 
 function formatDate(iso) {
   const d = new Date(iso)
@@ -7,6 +7,7 @@ function formatDate(iso) {
 
 export default function MessageCard({ message, category, style, isAdmin, onEdit, onDelete, justAdded }) {
   const tilt = computeCardTilt(message.layout_seed)
+  const stackOffset = computeStackOffset(message.layout_seed)
   const photoTransform = message.photo_url
     ? computePhotoLayout(category.photoLayout, message.layout_seed)
     : null
@@ -14,7 +15,7 @@ export default function MessageCard({ message, category, style, isAdmin, onEdit,
   return (
     <article
       className={`msg-card msg-card--${style.id} ${justAdded ? 'msg-card--enter' : ''}`}
-      style={{ '--tilt': `${tilt}deg` }}
+      style={{ '--tilt': `${tilt}deg`, '--stack-offset': `${stackOffset}px` }}
     >
       {style.id === 'paper_collage' && <span className="msg-card__tape" aria-hidden="true" />}
 

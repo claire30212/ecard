@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Modal from './Modal'
-import { uploadPhoto } from '../lib/storage'
+import { uploadPhoto, PhotoUploadError } from '../lib/storage'
 import { MAX_CONTENT_LENGTH } from '../lib/constants'
 
 export default function EditMessageModal({ message, cardId, onClose, onSubmitted }) {
@@ -38,8 +38,8 @@ export default function EditMessageModal({ message, cardId, onClose, onSubmitted
         setError('更新失敗，請重新整理頁面後再試')
         setSubmitting(false)
       }
-    } catch {
-      setError('更新失敗，請稍後再試一次')
+    } catch (err) {
+      setError(err instanceof PhotoUploadError ? err.message : '更新失敗，請稍後再試一次')
       setSubmitting(false)
     }
   }
@@ -85,6 +85,7 @@ export default function EditMessageModal({ message, cardId, onClose, onSubmitted
             取消
           </button>
           <button type="submit" className="btn btn--primary" disabled={!canSubmit}>
+            {submitting && <span className="btn-spinner" aria-hidden="true" />}
             {submitting ? '儲存中...' : '儲存'}
           </button>
         </div>

@@ -1,18 +1,17 @@
 import { useState } from 'react'
 import { CATEGORIES, STYLES, ILLUSTRATION_VARIANTS, makeIllustrationRef, MAX_NAME_LENGTH, MAX_CONTENT_LENGTH } from '../lib/constants'
 import { createCard } from '../lib/cards'
-import { uploadPhoto } from '../lib/storage'
+import { uploadPhoto, PhotoUploadError } from '../lib/storage'
+import { buildCardLink, buildMyCardsLink } from '../lib/links'
+import { useAuth } from '../context/AuthContext'
 import BuiltInIllustration from '../components/BuiltInIllustration'
 import CopyField from '../components/CopyField'
+import LoginPage from './LoginPage'
 
 const STEP_TITLES = ['選擇類別', '選擇風格', '設定封面', '完成']
 
-function buildLink(id, adminKey) {
-  const base = `${window.location.origin}${import.meta.env.BASE_URL}`
-  return adminKey ? `${base}?id=${id}&admin=${adminKey}` : `${base}?id=${id}`
-}
-
 export default function CreatePage({ onViewCard }) {
+  const { user, loading: authLoading } = useAuth()
   const [step, setStep] = useState(1)
   const [categoryId, setCategoryId] = useState(null)
   const [styleId, setStyleId] = useState(null)
@@ -56,6 +55,7 @@ export default function CreatePage({ onViewCard }) {
 
       const { admin_key } = await createCard({
         id: cardId,
+        creator_id: user.id,
         category: categoryId,
         style: styleId,
         recipient_name: trimmedName,
@@ -68,11 +68,15 @@ export default function CreatePage({ onViewCard }) {
 
       setResult({ id: cardId, adminKey: admin_key })
       setStep(4)
-    } catch {
-      setError('建立卡片失敗，請確認網路連線後再試一次')
+    } catch (err) {
+      setError(err instanceof PhotoUploadError ? err.message : '建立卡片失敗，請確認網路連線後再試一次')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (authLoading) {
+    return <div className="page-status">載入中...</div>
   }
 
   return (
@@ -80,16 +84,27 @@ export default function CreatePage({ onViewCard }) {
       <header className="create-page__header">
         <h1 className="create-page__title">手作電子卡片</h1>
         <p className="create-page__subtitle">為重要的人，做一張可以一起留言的卡片</p>
-        <div className="step-dots">
-          {STEP_TITLES.map((t, i) => (
-            <span key={t} className={`step-dot ${step === i + 1 ? 'step-dot--active' : ''} ${step > i + 1 ? 'step-dot--done' : ''}`}>
-              {i + 1}
-            </span>
-          ))}
-        </div>
+        {user && (
+          <a className="create-page__mycards-link" href={buildMyCardsLink()}>
+            我的卡片
+          </a>
+        )}
+        {user && (
+          <div className="step-dots">
+            {STEP_TITLES.map((t, i) => (
+              <span key={t} className={`step-dot ${step === i + 1 ? 'step-dot--active' : ''} ${step > i + 1 ? 'step-dot--done' : ''}`}>
+                {i + 1}
+              </span>
+            ))}
+          </div>
+        )}
       </header>
 
-      {step === 1 && (
+      {!user && (
+        <LoginPage title="建立卡片前，先登入" subtitle="用 Email 收一封登入連結，不需要密碼" />
+      )}
+
+      {user && step === 1 && (
         <section className="wizard-step">
           <h2 className="wizard-step__heading">這張卡片是什麼類別？</h2>
           <div className="category-grid">
@@ -114,7 +129,7 @@ export default function CreatePage({ onViewCard }) {
         </section>
       )}
 
-      {step === 2 && (
+      {user && step === 2 && (
         <section className="wizard-step">
           <h2 className="wizard-step__heading">想要什麼質感風格？</h2>
           <div className="style-grid">
@@ -141,7 +156,7 @@ export default function CreatePage({ onViewCard }) {
         </section>
       )}
 
-      {step === 3 && (
+      {user && step === 3 && (
         <section className="wizard-step">
           <h2 className="wizard-step__heading">設定封面</h2>
 
@@ -238,25 +253,27 @@ export default function CreatePage({ onViewCard }) {
               上一步
             </button>
             <button type="button" className="btn btn--primary" onClick={handleCreate} disabled={submitting}>
+              {submitting && <span className="btn-spinner" aria-hidden="true" />}
               {submitting ? '建立中...' : '產生卡片連結'}
             </button>
           </div>
         </section>
       )}
 
-      {step === 4 && result && (
+      {user && step === 4 && result && (
         <section className="wizard-step">
           <h2 className="wizard-step__heading">卡片建立完成</h2>
+          <p className="login-page__hint">這張卡片已經自動加進「我的卡片」列表，不用特地記連結。</p>
           <CopyField
             label="訪客連結"
             hint="這組連結可以分享給親友，讓大家留言"
-            value={buildLink(result.id)}
+            value={buildCardLink(result.id)}
             tone="guest"
           />
           <CopyField
             label="管理連結"
             hint="這組連結請自己保存，不要外流；可用來編輯或刪除留言"
-            value={buildLink(result.id, result.adminKey)}
+            value={buildCardLink(result.id, result.adminKey)}
             tone="admin"
           />
           <div className="wizard-step__actions">

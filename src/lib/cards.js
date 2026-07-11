@@ -1,8 +1,10 @@
 import { supabase } from './supabase'
 
+// 訪客／留言頁一律查詢 ecard_cards_public 視圖，不含 admin_key、creator_id，
+// 避免一般查詢就能撈出管理金鑰（原表已收緊為僅本人可讀）
 export async function fetchCard(cardId) {
   const { data, error } = await supabase
-    .from('ecard_cards')
+    .from('ecard_cards_public')
     .select('id, category, style, recipient_name, cover_photo_url, blessing_message, show_blessing, creator_signature, show_signature, created_at')
     .eq('id', cardId)
     .maybeSingle()
@@ -10,16 +12,14 @@ export async function fetchCard(cardId) {
   return data
 }
 
-// admin_key 僅在建立卡片後、產生連結頁時讀取一次，之後只透過網址參數保存，
-// 不會再對外查詢（避免任何一般查詢就能撈出 admin_key）
-export async function fetchCardAdminKey(cardId) {
+// 管理連結驗證改走 SECURITY DEFINER 函式比對 admin_key，比對成功才回傳卡片資料，
+// 前端不再直接查表撈 admin_key
+export async function verifyAdminKey({ cardId, adminKey }) {
   const { data, error } = await supabase
-    .from('ecard_cards')
-    .select('admin_key')
-    .eq('id', cardId)
+    .rpc('verify_admin_key', { p_card_id: cardId, p_admin_key: adminKey })
     .maybeSingle()
   if (error) throw error
-  return data?.admin_key || null
+  return data || null
 }
 
 export async function createCard(payload) {
@@ -30,6 +30,20 @@ export async function createCard(payload) {
     .single()
   if (error) throw error
   return data
+}
+
+// 「我的卡片」列表：RLS 已限定只能查到 creator_id = auth.uid() 的卡片，
+// 用 PostgREST embed 一併帶出各卡片的留言數
+export async function fetchMyCards() {
+  const { data, error } = await supabase
+    .from('ecard_cards')
+    .select('id, category, style, recipient_name, admin_key, created_at, ecard_messages(count)')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data || []).map((row) => ({
+    ...row,
+    messageCount: row.ecard_messages?.[0]?.count ?? 0,
+  }))
 }
 
 export async function fetchMessages(cardId) {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Modal from './Modal'
-import { uploadPhoto } from '../lib/storage'
+import { uploadPhoto, PhotoUploadError } from '../lib/storage'
 import { MAX_CONTENT_LENGTH, MAX_NAME_LENGTH } from '../lib/constants'
 
 export default function MessageForm({ cardId, onClose, onSubmitted }) {
@@ -38,8 +38,8 @@ export default function MessageForm({ cardId, onClose, onSubmitted }) {
       let photoUrl = null
       if (photoFile) photoUrl = await uploadPhoto(photoFile, cardId)
       await onSubmitted({ authorName: trimmedName, content: trimmedContent || null, photoUrl })
-    } catch {
-      setError('送出失敗，請稍後再試一次')
+    } catch (err) {
+      setError(err instanceof PhotoUploadError ? err.message : '送出失敗，請稍後再試一次')
       setSubmitting(false)
     }
   }
@@ -89,6 +89,7 @@ export default function MessageForm({ cardId, onClose, onSubmitted }) {
             取消
           </button>
           <button type="submit" className="btn btn--primary" disabled={!canSubmit}>
+            {submitting && <span className="btn-spinner" aria-hidden="true" />}
             {submitting ? '送出中...' : '送出祝福'}
           </button>
         </div>

@@ -33,8 +33,15 @@ export function computePhotoLayout(photoLayout, layoutSeed) {
   return { rotate, offsetX, offsetY }
 }
 
-// 留言卡片本身也帶一點手作感的微傾斜，避免拼貼牆過於整齊死板
+// 留言卡片本身也帶手作感的傾斜，範圍擴大到 -6~6 度，避免拼貼牆過於整齊死板
 export function computeCardTilt(layoutSeed) {
   const [r1] = seededRandoms((layoutSeed || 0) + 0.37, 1)
-  return (r1 * 2 - 1) * 2.5
+  return (r1 * 2 - 1) * 6
+}
+
+// 桌機/平板拼貼牆用的固定垂直位移，讓卡片堆疊有貼滿一面牆的密度感
+// （手機寬度不使用，維持單欄可讀性）
+export function computeStackOffset(layoutSeed) {
+  const [r1] = seededRandoms((layoutSeed || 0) + 0.71, 1)
+  return (r1 * 2 - 1) * 16
 }
