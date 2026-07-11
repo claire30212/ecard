@@ -10,12 +10,13 @@ export default function Cover({
   showBlessing,
   creatorSignature,
   showSignature,
+  decorationMode,
 }) {
   const illustration = parseIllustrationRef(coverPhotoUrl)
   const hasRealPhoto = coverPhotoUrl && !illustration
 
   return (
-    <div className={`cover cover--${style.id} cover--${category.id}`}>
+    <div className={`cover cover--${style.id} cover--${category.id} ${decorationMode ? 'cover--no-anim' : ''}`}>
       <div className="cover__visual">
         {hasRealPhoto && (
           <div className={`cover__frame cover__frame--${style.id}`}>

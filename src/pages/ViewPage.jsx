@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { fetchCard, verifyAdminKey, fetchMessages, addMessage, editMessage, deleteMessage } from '../lib/cards'
+import { fetchCard, verifyAdminKey, fetchMessages, addMessage, editMessage, deleteMessage, editCardSettings } from '../lib/cards'
 import { getCategory, getStyle } from '../lib/constants'
 import { getThemeColors, themeColorsToCssVars } from '../lib/colorThemes'
 import Cover from '../components/Cover'
@@ -7,10 +7,11 @@ import ScrollHint from '../components/ScrollHint'
 import MessageWall from '../components/MessageWall'
 import DoodleScatter from '../components/DoodleScatter'
 import DecorationLayer from '../components/DecorationLayer'
+import InteractiveDecorationLayer from '../components/InteractiveDecorationLayer'
+import StickerPicker from '../components/StickerPicker'
 import MessageForm from '../components/MessageForm'
 import EditMessageModal from '../components/EditMessageModal'
 import ConfirmDialog from '../components/ConfirmDialog'
-import DecorationEditorModal from '../components/DecorationEditorModal'
 import EditCardSettingsModal from '../components/EditCardSettingsModal'
 import LayoutPickerModal from '../components/LayoutPickerModal'
 import FloatingEffect from '../components/FloatingEffect'
@@ -26,10 +27,12 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   const [deletingMessage, setDeletingMessage] = useState(null)
   const [newlyAddedId, setNewlyAddedId] = useState(null)
   const [banner, setBanner] = useState('')
-  const [showDecorationEditor, setShowDecorationEditor] = useState(false)
+  const [decorationMode, setDecorationMode] = useState(false)
   const [showCardSettings, setShowCardSettings] = useState(false)
   const [showLayoutPicker, setShowLayoutPicker] = useState(false)
   const wallRef = useRef(null)
+  const coverSectionRef = useRef(null)
+  const wallSectionRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
@@ -68,6 +71,69 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   function showBanner(text) {
     setBanner(text)
     setTimeout(() => setBanner(''), 2500)
+  }
+
+  function updateDecorations(updater) {
+    setCard((prev) => ({
+      ...prev,
+      decorations: typeof updater === 'function' ? updater(prev.decorations || []) : updater,
+    }))
+  }
+
+  // 依目前使用者捲動位置比較靠近封面還是留言牆背景，決定新貼紙要落在哪個
+  // zone，並用該區塊目前可視範圍的垂直中心點算出預設位置，讓貼紙「先出現在
+  // 使用者當下的可視範圍內」
+  function pickZoneAndPosition() {
+    const viewportCenter = window.innerHeight / 2
+    const coverRect = coverSectionRef.current?.getBoundingClientRect()
+    const wallRect = wallSectionRef.current?.getBoundingClientRect()
+
+    function positionWithin(rect) {
+      const y = ((viewportCenter - rect.top) / rect.height) * 100
+      return Math.min(95, Math.max(5, y))
+    }
+
+    if (coverRect && coverRect.top <= viewportCenter && coverRect.bottom >= viewportCenter) {
+      return { zone: 'cover', x: 50, y: positionWithin(coverRect) }
+    }
+    if (wallRect && wallRect.top <= viewportCenter && wallRect.bottom >= viewportCenter) {
+      return { zone: 'wall', x: 50, y: positionWithin(wallRect) }
+    }
+    if (coverRect && wallRect) {
+      const coverDist = Math.abs((coverRect.top + coverRect.bottom) / 2 - viewportCenter)
+      const wallDist = Math.abs((wallRect.top + wallRect.bottom) / 2 - viewportCenter)
+      return coverDist <= wallDist ? { zone: 'cover', x: 50, y: 50 } : { zone: 'wall', x: 50, y: 50 }
+    }
+    return { zone: 'cover', x: 50, y: 50 }
+  }
+
+  function addSticker(stickerId) {
+    if (!stickerId) return
+    const { zone, x, y } = pickZoneAndPosition()
+    updateDecorations((prev) => [...prev, { sticker_id: stickerId, zone, x_percent: x, y_percent: y, rotation: 0, scale: 1 }])
+  }
+
+  async function handleFinishDecorating() {
+    setDecorationMode(false)
+    try {
+      const ok = await editCardSettings({
+        cardId: card.id,
+        adminKey: adminKeyFromUrl,
+        style: card.style,
+        coverPhotoUrl: card.cover_photo_url,
+        blessingMessage: card.blessing_message,
+        showBlessing: card.show_blessing,
+        creatorSignature: card.creator_signature,
+        showSignature: card.show_signature,
+        colorTheme: card.color_theme,
+        colorAdjust: card.color_adjust,
+        decorations: card.decorations || [],
+        layoutStyle: card.layout_style,
+      })
+      showBanner(ok ? '裝飾已儲存' : '儲存失敗，請重新整理頁面後再試')
+    } catch {
+      showBanner('儲存失敗，請稍後再試')
+    }
   }
 
   async function handleAddSubmitted({ authorName, content, photoUrl, stickerId }) {
@@ -116,8 +182,12 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
         <div className="admin-banner">
           <span>管理模式：可編輯、刪除留言</span>
           <div className="admin-banner__actions">
-            <button type="button" className="btn-chip btn-chip--on-dark" onClick={() => setShowDecorationEditor(true)}>
-              裝飾卡片
+            <button
+              type="button"
+              className="btn-chip btn-chip--on-dark"
+              onClick={() => (decorationMode ? handleFinishDecorating() : setDecorationMode(true))}
+            >
+              {decorationMode ? '完成裝飾' : '裝飾卡片'}
             </button>
             <button type="button" className="btn-chip btn-chip--on-dark" onClick={() => setShowCardSettings(true)}>
               編輯卡片設定
@@ -129,10 +199,14 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
         </div>
       )}
 
-      <section className={`cover-section cover-section--${style.id}`}>
+      <section className={`cover-section cover-section--${style.id}`} ref={coverSectionRef}>
         <DoodleScatter categoryId={category.id} className={`doodle-scatter--${style.id}`} />
-        <DecorationLayer decorations={card.decorations} zone="cover" />
-        <FloatingEffect categoryId={category.id} />
+        {decorationMode ? (
+          <InteractiveDecorationLayer decorations={card.decorations} zone="cover" onChange={updateDecorations} />
+        ) : (
+          <DecorationLayer decorations={card.decorations} zone="cover" />
+        )}
+        {!decorationMode && <FloatingEffect categoryId={category.id} />}
         <Cover
           category={category}
           style={style}
@@ -142,6 +216,7 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
           showBlessing={card.show_blessing}
           creatorSignature={card.creator_signature}
           showSignature={card.show_signature}
+          decorationMode={decorationMode}
         />
         <ScrollHint onClick={() => wallRef.current?.scrollIntoView({ behavior: 'smooth' })} />
       </section>
@@ -155,12 +230,22 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
           isAdmin={isAdmin}
           recipientName={card.recipient_name}
           decorations={card.decorations}
+          decorationMode={decorationMode}
+          onDecorationsChange={updateDecorations}
+          wallSectionRef={wallSectionRef}
           onAddClick={() => setShowAddForm(true)}
           onEdit={setEditingMessage}
           onDelete={setDeletingMessage}
           newlyAddedId={newlyAddedId}
         />
       </div>
+
+      {decorationMode && (
+        <div className="decoration-palette">
+          <p className="decoration-palette__hint">點選貼紙後拖曳到想要的位置，捲動頁面可裝飾封面或留言牆背景</p>
+          <StickerPicker allowClear={false} onSelect={addSticker} />
+        </div>
+      )}
 
       {banner && <div className="toast-banner">{banner}</div>}
 
@@ -185,19 +270,6 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
           danger
           onConfirm={handleDeleteConfirmed}
           onCancel={() => setDeletingMessage(null)}
-        />
-      )}
-
-      {showDecorationEditor && (
-        <DecorationEditorModal
-          card={card}
-          adminKey={adminKeyFromUrl}
-          onClose={() => setShowDecorationEditor(false)}
-          onSaved={(decorations) => {
-            setCard((prev) => ({ ...prev, decorations }))
-            setShowDecorationEditor(false)
-            showBanner('裝飾已儲存')
-          }}
         />
       )}
 

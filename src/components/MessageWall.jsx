@@ -1,7 +1,9 @@
+import { useRef } from 'react'
 import MessageCard from './MessageCard'
 import EmptyState from './EmptyState'
 import DoodleScatter from './DoodleScatter'
 import DecorationLayer from './DecorationLayer'
+import InteractiveDecorationLayer from './InteractiveDecorationLayer'
 
 function MessageGrid({ messages, category, style, layoutStyle, isAdmin, onEdit, onDelete, newlyAddedId, gridClassName }) {
   return (
@@ -31,17 +33,25 @@ export default function MessageWall({
   isAdmin,
   recipientName,
   decorations,
+  decorationMode,
+  onDecorationsChange,
+  wallSectionRef,
   onAddClick,
   onEdit,
   onDelete,
   newlyAddedId,
 }) {
   const gridClassName = `message-wall__grid message-wall__grid--${layoutStyle === 'grouped' ? 'loose' : layoutStyle}`
+  const localRef = useRef(null)
 
   return (
-    <section className={`message-wall message-wall--${style.id}`}>
+    <section className={`message-wall message-wall--${style.id}`} ref={wallSectionRef || localRef}>
       {style.id === 'illustration' && <DoodleScatter categoryId={category.id} />}
-      <DecorationLayer decorations={decorations} zone="wall" />
+      {decorationMode ? (
+        <InteractiveDecorationLayer decorations={decorations} zone="wall" onChange={onDecorationsChange} />
+      ) : (
+        <DecorationLayer decorations={decorations} zone="wall" />
+      )}
       <div className="message-wall__inner">
         {messages.length === 0 ? (
           <EmptyState category={category} recipientName={recipientName} />
@@ -95,9 +105,11 @@ export default function MessageWall({
         )}
       </div>
 
-      <button type="button" className="fab-add" onClick={onAddClick}>
-        新增留言
-      </button>
+      {!decorationMode && (
+        <button type="button" className="fab-add" onClick={onAddClick}>
+          新增留言
+        </button>
+      )}
     </section>
   )
 }
