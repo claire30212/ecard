@@ -250,6 +250,11 @@
 .login-page__form {
   max-width: 360px;
 }
+.login-page__tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
 
 /* ===== 我的卡片 ===== */
 .my-cards__toolbar {
@@ -385,7 +390,8 @@
   margin-top: 8px;
 }
 .illustration-picker {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
   gap: 12px;
 }
 .illustration-option {

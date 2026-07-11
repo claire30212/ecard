@@ -71,10 +71,10 @@ export function parseIllustrationRef(value) {
 }
 
 export const ILLUSTRATION_VARIANTS = {
-  birthday: ['1', '2'],
-  anniversary: ['1', '2'],
-  blessing: ['1', '2'],
-  thanks: ['1', '2'],
+  birthday: ['1', '2', '3', '4', '5'],
+  anniversary: ['1', '2', '3', '4', '5'],
+  blessing: ['1', '2', '3', '4', '5'],
+  thanks: ['1', '2', '3', '4', '5'],
 }
 
 export const MAX_CONTENT_LENGTH = 300

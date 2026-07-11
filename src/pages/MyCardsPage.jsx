@@ -77,7 +77,7 @@ export default function MyCardsPage() {
   if (!user) {
     return (
       <div className="create-page">
-        <LoginPage title="登入查看我的卡片" subtitle="用 Email 收一封登入連結，不需要密碼" />
+        <LoginPage title="登入查看我的卡片" subtitle="輸入 Email 與密碼登入，還沒有帳號可以直接切換到「註冊」" />
       </div>
     )
   }

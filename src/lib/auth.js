@@ -1,14 +1,15 @@
 import { supabase } from './supabase'
 
-function redirectUrl() {
-  return `${window.location.origin}${import.meta.env.BASE_URL}`
+// 回傳 { needsEmailConfirm: boolean }：若專案有開「Confirm email」，註冊後不會
+// 立刻拿到 session，需要提示使用者去信箱完成驗證才能登入
+export async function signUpWithPassword(email, password) {
+  const { data, error } = await supabase.auth.signUp({ email, password })
+  if (error) throw error
+  return { needsEmailConfirm: !data.session }
 }
 
-export async function signInWithMagicLink(email) {
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: redirectUrl() },
-  })
+export async function signInWithPassword(email, password) {
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) throw error
 }
 

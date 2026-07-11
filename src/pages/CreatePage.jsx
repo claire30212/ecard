@@ -101,7 +101,7 @@ export default function CreatePage({ onViewCard }) {
       </header>
 
       {!user && (
-        <LoginPage title="建立卡片前，先登入" subtitle="用 Email 收一封登入連結，不需要密碼" />
+        <LoginPage title="建立卡片前，先登入" subtitle="輸入 Email 與密碼登入，還沒有帳號可以直接切換到「註冊」" />
       )}
 
       {user && step === 1 && (
