@@ -51,18 +51,25 @@ export async function fetchMyCards() {
 export async function fetchMessages(cardId) {
   const { data, error } = await supabase
     .from('ecard_messages')
-    .select('id, card_id, author_name, content, photo_url, layout_seed, created_at, updated_at, sticker_id')
+    .select('id, card_id, author_name, content, photo_url, layout_seed, created_at, updated_at, sticker_id, sticker_color')
     .eq('card_id', cardId)
     .order('created_at', { ascending: true })
   if (error) throw error
   return data
 }
 
-export async function addMessage({ cardId, authorName, content, photoUrl, stickerId }) {
+export async function addMessage({ cardId, authorName, content, photoUrl, stickerId, stickerColor }) {
   const { data, error } = await supabase
     .from('ecard_messages')
-    .insert({ card_id: cardId, author_name: authorName, content, photo_url: photoUrl, sticker_id: stickerId || null })
-    .select('id, card_id, author_name, content, photo_url, layout_seed, created_at, updated_at, sticker_id')
+    .insert({
+      card_id: cardId,
+      author_name: authorName,
+      content,
+      photo_url: photoUrl,
+      sticker_id: stickerId || null,
+      sticker_color: stickerId ? stickerColor || null : null,
+    })
+    .select('id, card_id, author_name, content, photo_url, layout_seed, created_at, updated_at, sticker_id, sticker_color')
     .single()
   if (error) throw error
   return data

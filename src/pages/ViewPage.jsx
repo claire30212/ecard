@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { fetchCard, verifyAdminKey, fetchMessages, addMessage, editMessage, deleteMessage, editCardSettings } from '../lib/cards'
 import { getCategory, getStyle } from '../lib/constants'
 import { getThemeColors, themeColorsToCssVars } from '../lib/colorThemes'
+import { isTapeSticker } from '../lib/stickers'
 import Cover from '../components/Cover'
 import ScrollHint from '../components/ScrollHint'
 import MessageWall from '../components/MessageWall'
@@ -110,7 +111,8 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   function addSticker(stickerId) {
     if (!stickerId) return
     const { zone, x, y } = pickZoneAndPosition()
-    updateDecorations((prev) => [...prev, { sticker_id: stickerId, zone, x_percent: x, y_percent: y, rotation: 0, scale: 1 }])
+    const rotation = isTapeSticker(stickerId) ? Math.round((Math.random() * 24 - 12) * 10) / 10 : 0
+    updateDecorations((prev) => [...prev, { sticker_id: stickerId, zone, x_percent: x, y_percent: y, rotation, scale: 1 }])
   }
 
   async function handleFinishDecorating() {
@@ -136,8 +138,8 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
     }
   }
 
-  async function handleAddSubmitted({ authorName, content, photoUrl, stickerId }) {
-    const row = await addMessage({ cardId, authorName, content, photoUrl, stickerId })
+  async function handleAddSubmitted({ authorName, content, photoUrl, stickerId, stickerColor }) {
+    const row = await addMessage({ cardId, authorName, content, photoUrl, stickerId, stickerColor })
     setMessages((prev) => [...prev, row])
     setNewlyAddedId(row.id)
     setShowAddForm(false)

@@ -37,6 +37,10 @@ export default function InteractiveDecorationLayer({ decorations, zone, onChange
     onChange((prev) => prev.filter((_, i) => i !== index))
   }
 
+  function setColorAt(index, color) {
+    onChange((prev) => prev.map((d, i) => (i === index ? { ...d, color } : d)))
+  }
+
   return (
     <div className="decoration-layer decoration-layer--interactive" ref={layerRef} aria-hidden="true">
       {items.map((item) => (
@@ -52,7 +56,16 @@ export default function InteractiveDecorationLayer({ decorations, zone, onChange
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
         >
-          <StickerIcon stickerId={item.sticker_id} className="decoration-layer__icon" />
+          <StickerIcon stickerId={item.sticker_id} color={item.color} className="decoration-layer__icon" />
+          <input
+            type="color"
+            className="decoration-layer__color-swatch"
+            value={item.color || '#c9a97e'}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => setColorAt(item._index, e.target.value)}
+            aria-label="選擇貼紙顏色"
+          />
           <button
             type="button"
             className="decoration-layer__remove"

@@ -399,6 +399,34 @@
   gap: 12px;
   margin-top: 8px;
 }
+.message-form__color-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.84rem;
+  color: #8b7c6a;
+}
+.message-form__color-field input[type='color'] {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid #e6dcce;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.message-form__color-field input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 50%;
+}
+.message-form__color-field input[type='color']::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+.message-form__color-field input[type='color']::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
 
 /* ===== 連結複製區 ===== */
 .copy-field {
@@ -980,14 +1008,55 @@
   animation: stickyPop 0.5s ease-out;
 }
 
-/* ===== 貼紙選擇器（留言表單／裝飾編輯器共用） ===== */
+/* ===== 貼紙選擇器（留言表單／裝飾編輯器共用）：分類頁籤 + 小縮圖網格 ===== */
 .sticker-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sticker-picker__clear {
+  align-self: flex-start;
+  min-height: 32px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1.5px solid #e6dcce;
+  background: #fffdfa;
+  color: #8b7c6a;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.sticker-picker__clear--selected {
+  border-color: var(--accent, #c9a97e);
+  color: var(--ink, #5c4a3a);
+  background: color-mix(in srgb, var(--accent, #c9a97e) 15%, #fffdfa);
+}
+.sticker-picker__tabs {
+  display: flex;
+  gap: 6px;
+}
+.sticker-picker__tab {
+  min-height: 32px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1.5px solid #e6dcce;
+  background: #fffdfa;
+  color: #8b7c6a;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.sticker-picker__tab--active {
+  border-color: var(--accent, #c9a97e);
+  background: var(--accent, #c9a97e);
+  color: #fff;
+}
+.sticker-picker__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
   gap: 8px;
 }
 .sticker-picker__item {
-  min-height: 44px;
+  min-height: 48px;
   aspect-ratio: 1;
   border: 2px solid #e6dcce;
   border-radius: 10px;
@@ -1010,10 +1079,6 @@
   width: 100%;
   height: 100%;
   color: var(--ink, #5c4a3a);
-}
-.sticker-picker__none {
-  font-size: 0.78rem;
-  color: #9a8f80;
 }
 
 /* ===== 貼紙裝飾層（唯讀渲染，封面／留言牆背景共用） ===== */
@@ -1085,6 +1150,31 @@
   justify-content: center;
   pointer-events: auto;
 }
+.decoration-layer__color-swatch {
+  position: absolute;
+  bottom: -8px;
+  left: -8px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.decoration-layer__color-swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 50%;
+}
+.decoration-layer__color-swatch::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+.decoration-layer__color-swatch::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
 
 .decoration-palette {
   position: fixed;
@@ -1107,15 +1197,10 @@
   color: #8b7c6a;
   text-align: center;
 }
-.decoration-palette .sticker-picker {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  gap: 8px;
+.decoration-palette .sticker-picker__grid {
+  max-height: 28vh;
+  overflow-y: auto;
   padding-bottom: 2px;
-}
-.decoration-palette .sticker-picker__item {
-  flex: 0 0 auto;
 }
 
 /* ===== 底色系選擇器 ===== */

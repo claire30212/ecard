@@ -21,7 +21,7 @@ export default function MessageCard({ message, category, style, layoutStyle, isA
 
       {message.sticker_id && (
         <span className="msg-card__sticker" aria-hidden="true">
-          <StickerIcon stickerId={message.sticker_id} className="msg-card__sticker-icon" />
+          <StickerIcon stickerId={message.sticker_id} color={message.sticker_color} className="msg-card__sticker-icon" />
         </span>
       )}
 

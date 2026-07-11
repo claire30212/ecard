@@ -10,6 +10,7 @@ export default function MessageForm({ cardId, onClose, onSubmitted }) {
   const [photoFile, setPhotoFile] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
   const [stickerId, setStickerId] = useState(null)
+  const [stickerColor, setStickerColor] = useState('#c9a97e')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -39,7 +40,13 @@ export default function MessageForm({ cardId, onClose, onSubmitted }) {
     try {
       let photoUrl = null
       if (photoFile) photoUrl = await uploadPhoto(photoFile, cardId)
-      await onSubmitted({ authorName: trimmedName, content: trimmedContent || null, photoUrl, stickerId })
+      await onSubmitted({
+        authorName: trimmedName,
+        content: trimmedContent || null,
+        photoUrl,
+        stickerId,
+        stickerColor: stickerId ? stickerColor : null,
+      })
     } catch (err) {
       setError(err instanceof PhotoUploadError ? err.message : '送出失敗，請稍後再試一次')
       setSubmitting(false)
@@ -87,6 +94,17 @@ export default function MessageForm({ cardId, onClose, onSubmitted }) {
         <div className="field">
           <span className="field__label">加個小貼紙（選填，限一個）</span>
           <StickerPicker selectedId={stickerId} onSelect={setStickerId} />
+          {stickerId && (
+            <label className="message-form__color-field">
+              <span>貼紙顏色</span>
+              <input
+                type="color"
+                value={stickerColor}
+                onChange={(e) => setStickerColor(e.target.value)}
+                disabled={submitting}
+              />
+            </label>
+          )}
         </div>
 
         {error && <p className="field__error">{error}</p>}

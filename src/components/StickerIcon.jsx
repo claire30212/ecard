@@ -82,9 +82,176 @@ const STICKER_PATHS = {
       <circle cx="12" cy="12" r="1" />
     </>
   ),
+
+  // ===== 插畫風（可愛動物/自然物，線條為主，局部低透明度 fill 點綴）=====
+  cat: (
+    <>
+      <path d="M6 9l1.5-4 2.5 3M18 9l-1.5-4-2.5 3" />
+      <circle cx="12" cy="13" r="6.5" />
+      <circle cx="9.5" cy="12.5" r="0.8" fill="currentColor" />
+      <circle cx="14.5" cy="12.5" r="0.8" fill="currentColor" />
+      <path d="M10.5 15.5q1.5 1.2 3 0" />
+      <path d="M6 14h-2M6 15.5h-2.3M18 14h2M18 15.5h2.3" />
+    </>
+  ),
+  dog: (
+    <>
+      <ellipse cx="7" cy="10" rx="2.4" ry="3.6" transform="rotate(-20 7 10)" />
+      <ellipse cx="17" cy="10" rx="2.4" ry="3.6" transform="rotate(20 17 10)" />
+      <circle cx="12" cy="13" r="6" />
+      <circle cx="9.7" cy="12.5" r="0.8" fill="currentColor" />
+      <circle cx="14.3" cy="12.5" r="0.8" fill="currentColor" />
+      <circle cx="12" cy="14.3" r="1" fill="currentColor" />
+      <path d="M12 15.3v1.2M9.5 17q2.5 1.4 5 0" />
+    </>
+  ),
+  bear: (
+    <>
+      <circle cx="7.5" cy="7" r="2.2" />
+      <circle cx="16.5" cy="7" r="2.2" />
+      <circle cx="12" cy="13" r="6.5" />
+      <circle cx="9.5" cy="12.5" r="0.8" fill="currentColor" />
+      <circle cx="14.5" cy="12.5" r="0.8" fill="currentColor" />
+      <ellipse cx="12" cy="15" rx="2" ry="1.5" fill="currentColor" fillOpacity="0.18" />
+      <path d="M12 14.3v1M10.3 16.2q1.7 1 3.4 0" />
+    </>
+  ),
+  bunny: (
+    <>
+      <ellipse cx="9.5" cy="5.5" rx="1.6" ry="4.2" transform="rotate(-8 9.5 5.5)" />
+      <ellipse cx="14.5" cy="5.5" rx="1.6" ry="4.2" transform="rotate(8 14.5 5.5)" />
+      <circle cx="12" cy="14" r="6" />
+      <circle cx="9.8" cy="13.5" r="0.8" fill="currentColor" />
+      <circle cx="14.2" cy="13.5" r="0.8" fill="currentColor" />
+      <path d="M12 15q-.8 1 -1.6 .2M12 15q.8 1 1.6 .2" />
+    </>
+  ),
+  cloud_face: (
+    <>
+      <path d="M6.5 17a4 4 0 0 1-.5-7.9 5 5 0 0 1 9.6-1.8A4.5 4.5 0 0 1 17.5 17z" />
+      <circle cx="9.5" cy="13" r="0.7" fill="currentColor" />
+      <circle cx="14" cy="13" r="0.7" fill="currentColor" />
+      <path d="M9.8 15.2q1.7 1.3 3.4 0" />
+    </>
+  ),
+  sun_face: (
+    <>
+      <circle cx="12" cy="12" r="4.5" />
+      <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />
+      <circle cx="10.2" cy="11" r="0.6" fill="currentColor" />
+      <circle cx="13.8" cy="11" r="0.6" fill="currentColor" />
+      <path d="M10.3 13.3q1.7 1.2 3.4 0" />
+    </>
+  ),
+  flower_cute: (
+    <>
+      <ellipse cx="12" cy="7.2" rx="2.6" ry="3.6" />
+      <ellipse cx="12" cy="7.2" rx="2.6" ry="3.6" transform="rotate(72 12 12)" />
+      <ellipse cx="12" cy="7.2" rx="2.6" ry="3.6" transform="rotate(144 12 12)" />
+      <ellipse cx="12" cy="7.2" rx="2.6" ry="3.6" transform="rotate(216 12 12)" />
+      <ellipse cx="12" cy="7.2" rx="2.6" ry="3.6" transform="rotate(288 12 12)" />
+      <circle cx="12" cy="12" r="2.1" />
+      <circle cx="11.2" cy="11.7" r="0.4" fill="currentColor" />
+      <circle cx="12.8" cy="11.7" r="0.4" fill="currentColor" />
+      <path d="M11.3 12.6q.7 .5 1.4 0" />
+    </>
+  ),
+  rainbow: (
+    <>
+      <path d="M3 17a9 9 0 0 1 18 0" />
+      <path d="M6 17a6 6 0 0 1 12 0" />
+      <path d="M9 17a3 3 0 0 1 6 0" />
+      <circle cx="4" cy="19" r="1" fill="currentColor" />
+      <circle cx="20" cy="19" r="1" fill="currentColor" />
+    </>
+  ),
+  cake: (
+    <>
+      <path d="M12 3v2.8" />
+      <circle cx="12" cy="2.6" r="0.9" fill="currentColor" />
+      <rect x="5" y="11" width="14" height="7" rx="1.5" />
+      <path d="M5 14.5h14" />
+      <path d="M8 11l.6-2M12 11l-.6-2M16 11l.6-2" />
+    </>
+  ),
+
+  // ===== 膠帶造型（面為主，fill=currentColor，花紋用固定半透明白色疊加）=====
+  tape_plain: (
+    <g transform="rotate(-10 12 12)">
+      <rect x="1" y="8.5" width="22" height="7" rx="1" fill="currentColor" />
+      <rect x="1" y="8.5" width="22" height="1.4" rx="0.7" fill="#fff" fillOpacity="0.35" />
+    </g>
+  ),
+  tape_stripe: (
+    <g transform="rotate(-10 12 12)">
+      <rect x="1" y="8.5" width="22" height="7" rx="1" fill="currentColor" />
+      <rect x="3" y="8.5" width="1.6" height="7" fill="#fff" fillOpacity="0.5" />
+      <rect x="8" y="8.5" width="1.6" height="7" fill="#fff" fillOpacity="0.5" />
+      <rect x="13" y="8.5" width="1.6" height="7" fill="#fff" fillOpacity="0.5" />
+      <rect x="18" y="8.5" width="1.6" height="7" fill="#fff" fillOpacity="0.5" />
+    </g>
+  ),
+  tape_dot: (
+    <g transform="rotate(-10 12 12)">
+      <rect x="1" y="8.5" width="22" height="7" rx="1" fill="currentColor" />
+      <circle cx="5" cy="12" r="1" fill="#fff" fillOpacity="0.55" />
+      <circle cx="9.5" cy="12" r="1" fill="#fff" fillOpacity="0.55" />
+      <circle cx="14" cy="12" r="1" fill="#fff" fillOpacity="0.55" />
+      <circle cx="18.5" cy="12" r="1" fill="#fff" fillOpacity="0.55" />
+    </g>
+  ),
+  tape_grid: (
+    <g transform="rotate(-10 12 12)">
+      <rect x="1" y="8.5" width="22" height="7" rx="1" fill="currentColor" />
+      <path d="M6 8.5v7M11 8.5v7M16 8.5v7M21 8.5v7" stroke="#fff" strokeOpacity="0.45" strokeWidth="1" fill="none" />
+      <path d="M1 10.5h22M1 13.5h22" stroke="#fff" strokeOpacity="0.45" strokeWidth="1" fill="none" />
+    </g>
+  ),
+  tape_zigzag: (
+    <path
+      d="M1 9l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1v6l-2-1-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"
+      transform="rotate(-10 12 12)"
+      fill="currentColor"
+    />
+  ),
+  tape_scallop: (
+    <g transform="rotate(-10 12 12)" fill="currentColor">
+      <rect x="2" y="9" width="20" height="6" rx="1" />
+      <circle cx="4" cy="9" r="1.6" />
+      <circle cx="8" cy="9" r="1.6" />
+      <circle cx="12" cy="9" r="1.6" />
+      <circle cx="16" cy="9" r="1.6" />
+      <circle cx="20" cy="9" r="1.6" />
+      <circle cx="4" cy="15" r="1.6" />
+      <circle cx="8" cy="15" r="1.6" />
+      <circle cx="12" cy="15" r="1.6" />
+      <circle cx="16" cy="15" r="1.6" />
+      <circle cx="20" cy="15" r="1.6" />
+    </g>
+  ),
+  tape_stitch: (
+    <g transform="rotate(-10 12 12)">
+      <rect x="1" y="8.5" width="22" height="7" rx="1" fill="currentColor" />
+      <path d="M2 12h20" stroke="#fff" strokeOpacity="0.6" strokeWidth="1.4" strokeDasharray="2 1.6" fill="none" />
+    </g>
+  ),
+  tape_arrow: (
+    <g transform="rotate(-10 12 12)">
+      <rect x="1" y="8.5" width="22" height="7" rx="1" fill="currentColor" />
+      <path
+        d="M4 12h14M14 9.5l3 2.5-3 2.5"
+        stroke="#fff"
+        strokeOpacity="0.6"
+        strokeWidth="1.4"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </g>
+  ),
 }
 
-export default function StickerIcon({ stickerId, className }) {
+export default function StickerIcon({ stickerId, className, color }) {
   const content = STICKER_PATHS[stickerId]
   if (!content) return null
   return (
@@ -96,6 +263,7 @@ export default function StickerIcon({ stickerId, className }) {
       strokeWidth="1.6"
       strokeLinecap="round"
       strokeLinejoin="round"
+      style={color ? { color } : undefined}
     >
       {content}
     </svg>
