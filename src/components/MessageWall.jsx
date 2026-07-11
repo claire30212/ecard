@@ -1,6 +1,7 @@
 import MessageCard from './MessageCard'
 import EmptyState from './EmptyState'
 import DoodleScatter from './DoodleScatter'
+import DecorationLayer from './DecorationLayer'
 
 export default function MessageWall({
   messages,
@@ -8,6 +9,7 @@ export default function MessageWall({
   style,
   isAdmin,
   recipientName,
+  decorations,
   onAddClick,
   onEdit,
   onDelete,
@@ -16,6 +18,7 @@ export default function MessageWall({
   return (
     <section className={`message-wall message-wall--${style.id}`}>
       {style.id === 'illustration' && <DoodleScatter categoryId={category.id} />}
+      <DecorationLayer decorations={decorations} zone="wall" />
       <div className="message-wall__inner">
         {messages.length === 0 ? (
           <EmptyState category={category} recipientName={recipientName} />

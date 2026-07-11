@@ -1,4 +1,5 @@
 import { computePhotoLayout, computeCardTilt, computeStackOffset } from '../lib/layout'
+import StickerIcon from './StickerIcon'
 
 function formatDate(iso) {
   const d = new Date(iso)
@@ -18,6 +19,12 @@ export default function MessageCard({ message, category, style, isAdmin, onEdit,
       style={{ '--tilt': `${tilt}deg`, '--stack-offset': `${stackOffset}px` }}
     >
       {style.id === 'paper_collage' && <span className="msg-card__tape" aria-hidden="true" />}
+
+      {message.sticker_id && (
+        <span className="msg-card__sticker" aria-hidden="true">
+          <StickerIcon stickerId={message.sticker_id} className="msg-card__sticker-icon" />
+        </span>
+      )}
 
       {message.photo_url && (
         <div

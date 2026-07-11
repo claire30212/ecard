@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Modal from './Modal'
+import StickerPicker from './StickerPicker'
 import { uploadPhoto, PhotoUploadError } from '../lib/storage'
 import { MAX_CONTENT_LENGTH, MAX_NAME_LENGTH } from '../lib/constants'
 
@@ -8,6 +9,7 @@ export default function MessageForm({ cardId, onClose, onSubmitted }) {
   const [content, setContent] = useState('')
   const [photoFile, setPhotoFile] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
+  const [stickerId, setStickerId] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -37,7 +39,7 @@ export default function MessageForm({ cardId, onClose, onSubmitted }) {
     try {
       let photoUrl = null
       if (photoFile) photoUrl = await uploadPhoto(photoFile, cardId)
-      await onSubmitted({ authorName: trimmedName, content: trimmedContent || null, photoUrl })
+      await onSubmitted({ authorName: trimmedName, content: trimmedContent || null, photoUrl, stickerId })
     } catch (err) {
       setError(err instanceof PhotoUploadError ? err.message : '送出失敗，請稍後再試一次')
       setSubmitting(false)
@@ -81,6 +83,11 @@ export default function MessageForm({ cardId, onClose, onSubmitted }) {
             <img src={photoPreview} alt="預覽" />
           </div>
         )}
+
+        <div className="field">
+          <span className="field__label">加個小貼紙（選填，限一個）</span>
+          <StickerPicker selectedId={stickerId} onSelect={setStickerId} />
+        </div>
 
         {error && <p className="field__error">{error}</p>}
 

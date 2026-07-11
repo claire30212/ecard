@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CATEGORIES, STYLES, ILLUSTRATION_VARIANTS, makeIllustrationRef, MAX_NAME_LENGTH, MAX_CONTENT_LENGTH } from '../lib/constants'
+import { COLOR_THEMES, CATEGORY_DEFAULT_THEME, getThemeColors, themeColorsToCssVars } from '../lib/colorThemes'
 import { createCard } from '../lib/cards'
 import { uploadPhoto, PhotoUploadError } from '../lib/storage'
 import { buildCardLink, buildMyCardsLink } from '../lib/links'
@@ -24,9 +25,19 @@ export default function CreatePage({ onViewCard }) {
   const [coverPhotoFile, setCoverPhotoFile] = useState(null)
   const [coverPhotoPreview, setCoverPhotoPreview] = useState(null)
   const [illustrationVariant, setIllustrationVariant] = useState('1')
+  const [colorTheme, setColorTheme] = useState('warm')
+  const [colorAdjust, setColorAdjust] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
+
+  function handleCategorySelect(id) {
+    setCategoryId(id)
+    setColorTheme(CATEGORY_DEFAULT_THEME[id] || 'warm')
+    setColorAdjust(0)
+  }
+
+  const themeVars = themeColorsToCssVars(getThemeColors(colorTheme, colorAdjust))
 
   function handleCoverFileChange(e) {
     const file = e.target.files?.[0]
@@ -64,6 +75,9 @@ export default function CreatePage({ onViewCard }) {
         show_blessing: showBlessing,
         creator_signature: creatorSignature.trim() || null,
         show_signature: showSignature,
+        color_theme: colorTheme,
+        color_adjust: colorAdjust,
+        decorations: [],
       })
 
       setResult({ id: cardId, adminKey: admin_key })
@@ -80,7 +94,7 @@ export default function CreatePage({ onViewCard }) {
   }
 
   return (
-    <div className={`create-page ${categoryId ? `create-page--${categoryId}` : ''}`}>
+    <div className={`create-page ${categoryId ? `create-page--${categoryId}` : ''}`} style={themeVars}>
       <header className="create-page__header">
         <h1 className="create-page__title">手作電子卡片</h1>
         <p className="create-page__subtitle">為重要的人，做一張可以一起留言的卡片</p>
@@ -114,7 +128,7 @@ export default function CreatePage({ onViewCard }) {
                 type="button"
                 className={`category-card ${categoryId === c.id ? 'category-card--selected' : ''}`}
                 style={{ '--card-main': c.colors.main, '--card-accent': c.colors.accent }}
-                onClick={() => setCategoryId(c.id)}
+                onClick={() => handleCategorySelect(c.id)}
               >
                 <BuiltInIllustration categoryId={c.id} variant="1" className="category-card__icon" />
                 <span>{c.label}</span>
@@ -244,6 +258,39 @@ export default function CreatePage({ onViewCard }) {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="field">
+            <span className="field__label">底色（選填，預設依類別建議一組，可自由更換）</span>
+            <div className="theme-picker">
+              {COLOR_THEMES.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`theme-swatch ${colorTheme === t.id ? 'theme-swatch--selected' : ''}`}
+                  style={{ '--swatch-main': t.main, '--swatch-sub': t.sub, '--swatch-accent': t.accent }}
+                  onClick={() => setColorTheme(t.id)}
+                >
+                  <span className="theme-swatch__dots" aria-hidden="true">
+                    <span className="theme-swatch__dot" />
+                    <span className="theme-swatch__dot" />
+                    <span className="theme-swatch__dot" />
+                  </span>
+                  <span className="theme-swatch__label">{t.label}</span>
+                  <span className="theme-swatch__hint">{t.hint}</span>
+                </button>
+              ))}
+            </div>
+            <label className="theme-adjust">
+              <span className="field__label">明暗微調</span>
+              <input
+                type="range"
+                min="-20"
+                max="20"
+                value={colorAdjust}
+                onChange={(e) => setColorAdjust(Number(e.target.value))}
+              />
+            </label>
           </div>
 
           {error && <p className="field__error">{error}</p>}

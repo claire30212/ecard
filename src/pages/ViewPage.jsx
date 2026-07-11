@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { fetchCard, verifyAdminKey, fetchMessages, addMessage, editMessage, deleteMessage } from '../lib/cards'
 import { getCategory, getStyle } from '../lib/constants'
+import { getThemeColors, themeColorsToCssVars } from '../lib/colorThemes'
 import Cover from '../components/Cover'
 import ScrollHint from '../components/ScrollHint'
 import MessageWall from '../components/MessageWall'
 import DoodleScatter from '../components/DoodleScatter'
+import DecorationLayer from '../components/DecorationLayer'
 import MessageForm from '../components/MessageForm'
 import EditMessageModal from '../components/EditMessageModal'
 import ConfirmDialog from '../components/ConfirmDialog'
+import DecorationEditorModal from '../components/DecorationEditorModal'
+import EditCardSettingsModal from '../components/EditCardSettingsModal'
 
 export default function ViewPage({ cardId, adminKeyFromUrl }) {
   const [card, setCard] = useState(null)
@@ -20,6 +24,8 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   const [deletingMessage, setDeletingMessage] = useState(null)
   const [newlyAddedId, setNewlyAddedId] = useState(null)
   const [banner, setBanner] = useState('')
+  const [showDecorationEditor, setShowDecorationEditor] = useState(false)
+  const [showCardSettings, setShowCardSettings] = useState(false)
   const wallRef = useRef(null)
 
   useEffect(() => {
@@ -61,8 +67,8 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
     setTimeout(() => setBanner(''), 2500)
   }
 
-  async function handleAddSubmitted({ authorName, content, photoUrl }) {
-    const row = await addMessage({ cardId, authorName, content, photoUrl })
+  async function handleAddSubmitted({ authorName, content, photoUrl, stickerId }) {
+    const row = await addMessage({ cardId, authorName, content, photoUrl, stickerId })
     setMessages((prev) => [...prev, row])
     setNewlyAddedId(row.id)
     setShowAddForm(false)
@@ -98,13 +104,28 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
 
   const category = getCategory(card.category)
   const style = getStyle(card.style)
+  const themeColors = getThemeColors(card.color_theme, card.color_adjust)
+  const themeVars = themeColorsToCssVars(themeColors)
 
   return (
-    <div className={`view-page view-page--${category.id}`}>
-      {isAdmin && <div className="admin-banner">管理模式：可編輯、刪除留言</div>}
+    <div className={`view-page view-page--${category.id}`} style={themeVars}>
+      {isAdmin && (
+        <div className="admin-banner">
+          <span>管理模式：可編輯、刪除留言</span>
+          <div className="admin-banner__actions">
+            <button type="button" className="btn-chip btn-chip--on-dark" onClick={() => setShowDecorationEditor(true)}>
+              裝飾卡片
+            </button>
+            <button type="button" className="btn-chip btn-chip--on-dark" onClick={() => setShowCardSettings(true)}>
+              編輯卡片設定
+            </button>
+          </div>
+        </div>
+      )}
 
       <section className={`cover-section cover-section--${style.id}`}>
         <DoodleScatter categoryId={category.id} className={`doodle-scatter--${style.id}`} />
+        <DecorationLayer decorations={card.decorations} zone="cover" />
         <Cover
           category={category}
           style={style}
@@ -125,6 +146,7 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
           style={style}
           isAdmin={isAdmin}
           recipientName={card.recipient_name}
+          decorations={card.decorations}
           onAddClick={() => setShowAddForm(true)}
           onEdit={setEditingMessage}
           onDelete={setDeletingMessage}
@@ -155,6 +177,33 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
           danger
           onConfirm={handleDeleteConfirmed}
           onCancel={() => setDeletingMessage(null)}
+        />
+      )}
+
+      {showDecorationEditor && (
+        <DecorationEditorModal
+          card={card}
+          adminKey={adminKeyFromUrl}
+          onClose={() => setShowDecorationEditor(false)}
+          onSaved={(decorations) => {
+            setCard((prev) => ({ ...prev, decorations }))
+            setShowDecorationEditor(false)
+            showBanner('裝飾已儲存')
+          }}
+        />
+      )}
+
+      {showCardSettings && (
+        <EditCardSettingsModal
+          card={card}
+          categoryId={category.id}
+          adminKey={adminKeyFromUrl}
+          onClose={() => setShowCardSettings(false)}
+          onSaved={(updates) => {
+            setCard((prev) => ({ ...prev, ...updates }))
+            setShowCardSettings(false)
+            showBanner('卡片設定已更新')
+          }}
         />
       )}
     </div>
