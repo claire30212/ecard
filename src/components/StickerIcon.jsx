@@ -251,9 +251,12 @@ const STICKER_PATHS = {
   ),
 }
 
-export default function StickerIcon({ stickerId, className, color }) {
+export default function StickerIcon({ stickerId, className, color, opacity }) {
   const content = STICKER_PATHS[stickerId]
   if (!content) return null
+  const style = {}
+  if (color) style.color = color
+  if (opacity !== undefined && opacity !== null) style.opacity = opacity
   return (
     <svg
       viewBox="0 0 24 24"
@@ -263,7 +266,7 @@ export default function StickerIcon({ stickerId, className, color }) {
       strokeWidth="1.6"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={color ? { color } : undefined}
+      style={Object.keys(style).length ? style : undefined}
     >
       {content}
     </svg>

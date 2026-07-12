@@ -7,6 +7,10 @@
   --sub: #e8b4a0;
   --accent: #c9a97e;
   --ink: #5c4a3a;
+  --on-accent: #fff;
+}
+.view-page {
+  position: relative;
 }
 
 .handwritten {
@@ -15,18 +19,31 @@
 
 /* ===== 按鈕：hover / active / disabled 皆用同色系深淺變化 ===== */
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 44px;
   padding: 0 22px;
   border-radius: 999px;
   border: none;
   font-size: 1rem;
+  text-decoration: none;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 .btn--primary {
   background: var(--accent, #c9a97e);
-  color: #fff;
-  box-shadow: 0 3px 10px color-mix(in srgb, var(--accent, #c9a97e) 45%, transparent);
+  /* 疊在 accent 底色上的文字用 --on-accent，而不是固定白色：像「祝福」
+     類別預設的 fresh 色系 accent 接近白色，白字疊上去對比度只有 1.13，
+     看起來像停用按鈕；--on-accent 會依 accent 實際亮度自動選白字或深色
+     ink 字（見 colorThemes.js 的 getThemeColors） */
+  color: var(--on-accent, #fff);
+  /* accent 太淺時（例如 fresh 系）連按鈕底色跟頁面背景都幾乎融在一起
+     （實測對比度只有 1.06），只修文字色還是不夠，外面再疊一層固定深淺度
+     的陰影/描邊，不管 accent 多淺，按鈕的形狀邊界都還是看得出來 */
+  box-shadow:
+    0 3px 10px color-mix(in srgb, var(--accent, #c9a97e) 45%, transparent),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 .btn--primary:hover:not(:disabled) {
   background: color-mix(in srgb, var(--accent, #c9a97e) 85%, black 15%);
@@ -97,7 +114,7 @@
 }
 .btn-chip--active {
   background: var(--accent, #c9a97e);
-  color: #fff;
+  color: var(--on-accent, #fff);
   border-color: var(--accent, #c9a97e);
 }
 .btn-chip--danger {
@@ -197,7 +214,7 @@
 }
 .step-dot--active {
   background: var(--accent, #c9a97e);
-  color: #fff;
+  color: var(--on-accent, #fff);
 }
 .step-dot--done {
   background: color-mix(in srgb, var(--accent, #c9a97e) 40%, #ece4d8);
@@ -750,7 +767,7 @@
   border-radius: 999px;
   border: none;
   background: var(--accent, #c9a97e);
-  color: #fff;
+  color: var(--on-accent, #fff);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
   cursor: pointer;
   font-size: 0.95rem;
@@ -1048,7 +1065,7 @@
 .sticker-picker__tab--active {
   border-color: var(--accent, #c9a97e);
   background: var(--accent, #c9a97e);
-  color: #fff;
+  color: var(--on-accent, #fff);
 }
 .sticker-picker__grid {
   display: grid;
@@ -1096,7 +1113,12 @@
 .decoration-layer__icon {
   width: 100%;
   height: 100%;
-  color: var(--accent, #c9a97e);
+  /* 貼紙預設色改用 --ink 而非 --accent：四組底色系的 accent 跟自己的
+     main/留言牆底色（固定的 #faf7f2 近白色）明度都很接近，WCAG 對比度
+     實測只有 1.06~2.67，貼紙幾乎融入背景；ink 是本來就拿來當文字色的
+     深色，對四組底色系跟留言牆底色的對比度都在 5.5 以上，不需要使用者
+     手動調色也看得清楚 */
+  color: var(--ink, #5c4a3a);
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.15));
 }
 
@@ -1174,6 +1196,82 @@
 .decoration-layer__color-swatch::-moz-color-swatch {
   border: none;
   border-radius: 50%;
+}
+.decoration-layer__resize {
+  position: absolute;
+  right: -24px;
+  bottom: -24px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  min-height: 0;
+  border: none;
+  background: transparent;
+  cursor: nwse-resize;
+  touch-action: none;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.decoration-layer__resize::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent, #c9a97e);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.decoration-layer__rotate {
+  position: absolute;
+  top: -48px;
+  left: 50%;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  min-height: 0;
+  border: none;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+}
+.decoration-layer__rotate::before {
+  /* 一條細線連到貼紙上緣，讓使用者一眼看出「往上伸出的旋轉手把」跟右下角
+     的縮放手把是不同功能、拖曳方式也不同（沿圓周轉動 vs 拉遠拉近） */
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1.5px;
+  height: 18px;
+  background: color-mix(in srgb, var(--accent, #c9a97e) 70%, transparent);
+}
+.decoration-layer__rotate::after {
+  content: '';
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent, #c9a97e);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.decoration-layer__opacity {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 64px;
+  /* 縮放手把的可觸控熱區延伸到貼紙下緣 +24px，透明度滑桿要留在熱區之外，
+     不然兩者的點擊/拖曳範圍會疊在一起互相干擾 */
+  margin-top: 32px;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .decoration-palette {

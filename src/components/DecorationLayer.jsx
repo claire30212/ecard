@@ -18,7 +18,7 @@ export default function DecorationLayer({ decorations, zone }) {
             transform: `translate(-50%, -50%) rotate(${d.rotation || 0}deg) scale(${d.scale || 1})`,
           }}
         >
-          <StickerIcon stickerId={d.sticker_id} color={d.color} className="decoration-layer__icon" />
+          <StickerIcon stickerId={d.sticker_id} color={d.color} opacity={d.opacity} className="decoration-layer__icon" />
         </div>
       ))}
     </div>

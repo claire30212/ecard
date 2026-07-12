@@ -108,14 +108,31 @@ export function adjustLightness(hex, deltaPercent) {
   return hslToHex(h, s, newL)
 }
 
+function relativeLuminance(hex) {
+  const toLinear = (c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+  const [r, g, b] = [1, 3, 5].map((i) => toLinear(parseInt(hex.slice(i, i + 2), 16) / 255))
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+function contrastRatio(hexA, hexB) {
+  const [l1, l2] = [relativeLuminance(hexA), relativeLuminance(hexB)].sort((a, b) => b - a)
+  return (l1 + 0.05) / (l2 + 0.05)
+}
+
 // 算出卡片實際要用的一組顏色。ink 刻意不隨 adjust 變動，避免文字對比不足
 export function getThemeColors(themeId, adjust = 0) {
   const theme = getColorTheme(themeId)
+  const accent = adjustLightness(theme.accent, adjust)
+  // 「疊在 accent 底色上的文字」該用白色還是 ink 深色，取決於這組 accent
+  // 實際算出來多亮：例如 fresh 系的 accent 接近白色，白字疊上去幾乎看不見
+  // （實測對比度只有 1.13），這時要改用 ink 深色字，對比度才夠（8.64）
+  const onAccent = contrastRatio('#ffffff', accent) >= 2 ? '#ffffff' : theme.ink
   return {
     main: adjustLightness(theme.main, adjust),
     sub: adjustLightness(theme.sub, adjust),
-    accent: adjustLightness(theme.accent, adjust),
+    accent,
     ink: theme.ink,
+    onAccent,
   }
 }
 
@@ -125,5 +142,6 @@ export function themeColorsToCssVars(colors) {
     '--sub': colors.sub,
     '--accent': colors.accent,
     '--ink': colors.ink,
+    '--on-accent': colors.onAccent || '#fff',
   }
 }

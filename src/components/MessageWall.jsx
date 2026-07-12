@@ -3,7 +3,6 @@ import MessageCard from './MessageCard'
 import EmptyState from './EmptyState'
 import DoodleScatter from './DoodleScatter'
 import DecorationLayer from './DecorationLayer'
-import InteractiveDecorationLayer from './InteractiveDecorationLayer'
 
 function MessageGrid({ messages, category, style, layoutStyle, isAdmin, onEdit, onDelete, newlyAddedId, gridClassName }) {
   return (
@@ -34,7 +33,6 @@ export default function MessageWall({
   recipientName,
   decorations,
   decorationMode,
-  onDecorationsChange,
   wallSectionRef,
   onAddClick,
   onEdit,
@@ -47,11 +45,7 @@ export default function MessageWall({
   return (
     <section className={`message-wall message-wall--${style.id}`} ref={wallSectionRef || localRef}>
       {style.id === 'illustration' && <DoodleScatter categoryId={category.id} />}
-      {decorationMode ? (
-        <InteractiveDecorationLayer decorations={decorations} zone="wall" onChange={onDecorationsChange} />
-      ) : (
-        <DecorationLayer decorations={decorations} zone="wall" />
-      )}
+      {!decorationMode && <DecorationLayer decorations={decorations} zone="wall" />}
       <div className="message-wall__inner">
         {messages.length === 0 ? (
           <EmptyState category={category} recipientName={recipientName} />

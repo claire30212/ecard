@@ -34,6 +34,7 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   const wallRef = useRef(null)
   const coverSectionRef = useRef(null)
   const wallSectionRef = useRef(null)
+  const pageRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
@@ -179,7 +180,17 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   const themeVars = themeColorsToCssVars(themeColors)
 
   return (
-    <div className={`view-page view-page--${category.id}`} style={themeVars}>
+    <div className={`view-page view-page--${category.id}`} style={themeVars} ref={pageRef}>
+      {decorationMode && (
+        <InteractiveDecorationLayer
+          decorations={card.decorations}
+          coverSectionRef={coverSectionRef}
+          wallSectionRef={wallSectionRef}
+          pageRef={pageRef}
+          onChange={updateDecorations}
+          defaultColor={themeColors.ink}
+        />
+      )}
       {isAdmin && (
         <div className="admin-banner">
           <span>管理模式：可編輯、刪除留言</span>
@@ -203,11 +214,7 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
 
       <section className={`cover-section cover-section--${style.id}`} ref={coverSectionRef}>
         <DoodleScatter categoryId={category.id} className={`doodle-scatter--${style.id}`} />
-        {decorationMode ? (
-          <InteractiveDecorationLayer decorations={card.decorations} zone="cover" onChange={updateDecorations} />
-        ) : (
-          <DecorationLayer decorations={card.decorations} zone="cover" />
-        )}
+        {!decorationMode && <DecorationLayer decorations={card.decorations} zone="cover" />}
         {!decorationMode && <FloatingEffect categoryId={category.id} />}
         <Cover
           category={category}
@@ -233,7 +240,6 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
           recipientName={card.recipient_name}
           decorations={card.decorations}
           decorationMode={decorationMode}
-          onDecorationsChange={updateDecorations}
           wallSectionRef={wallSectionRef}
           onAddClick={() => setShowAddForm(true)}
           onEdit={setEditingMessage}
