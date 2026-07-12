@@ -20,7 +20,13 @@ export default function Cover({
       <div className="cover__visual">
         {hasRealPhoto && (
           <div className={`cover__frame cover__frame--${style.id}`}>
-            <img src={coverPhotoUrl} alt={`給 ${recipientName}`} className="cover__photo" />
+            {/* crossOrigin 讓瀏覽器從一開始就用 CORS 模式快取這張圖：R11 下載
+                存檔功能會用 html2canvas 把整頁畫進 canvas，如果這張圖之前是用
+                「一般模式」載入並被瀏覽器快取，html2canvas 之後用 CORS 模式
+                再抓一次可能還是拿到同一份「非 CORS」快取，畫進 canvas 後
+                canvas 會被視為 tainted，之後 toBlob() 匯出圖片就會直接被
+                瀏覽器擋下來 */}
+            <img src={coverPhotoUrl} alt={`給 ${recipientName}`} className="cover__photo" crossOrigin="anonymous" />
           </div>
         )}
 

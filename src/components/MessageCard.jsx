@@ -36,7 +36,10 @@ export default function MessageCard({ message, category, style, layoutStyle, isA
             '--offset-y': `${photoTransform.offsetY}px`,
           }}
         >
-          <img src={message.photo_url} alt={`${message.author_name} 的照片`} loading="lazy" />
+          {/* crossOrigin 說明見 Cover.jsx 的同名屬性：避免這張圖被瀏覽器用
+              「非 CORS」模式快取，導致 R11 下載存檔功能的 canvas 被視為
+              tainted、匯出圖片時被瀏覽器擋下來 */}
+          <img src={message.photo_url} alt={`${message.author_name} 的照片`} loading="lazy" crossOrigin="anonymous" />
         </div>
       )}
 
