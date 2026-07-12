@@ -6,7 +6,7 @@ export async function fetchCard(cardId) {
   const { data, error } = await supabase
     .from('ecard_cards_public')
     .select(
-      'id, category, style, recipient_name, cover_photo_url, blessing_message, show_blessing, creator_signature, show_signature, created_at, color_theme, color_adjust, decorations, layout_style'
+      'id, category, style, recipient_name, cover_photo_url, blessing_message, show_blessing, creator_signature, show_signature, created_at, color_theme, color_adjust, decorations, layout_style, recipient_key'
     )
     .eq('id', cardId)
     .maybeSingle()
@@ -28,7 +28,7 @@ export async function createCard(payload) {
   const { data, error } = await supabase
     .from('ecard_cards')
     .insert(payload)
-    .select('id, admin_key')
+    .select('id, admin_key, recipient_key')
     .single()
   if (error) throw error
   return data
@@ -39,7 +39,7 @@ export async function createCard(payload) {
 export async function fetchMyCards() {
   const { data, error } = await supabase
     .from('ecard_cards')
-    .select('id, category, style, recipient_name, admin_key, created_at, ecard_messages(count)')
+    .select('id, category, style, recipient_name, admin_key, recipient_key, created_at, ecard_messages(count)')
     .order('created_at', { ascending: false })
   if (error) throw error
   return (data || []).map((row) => ({

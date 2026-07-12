@@ -33,6 +33,7 @@ export default function MessageWall({
   recipientName,
   decorations,
   decorationMode,
+  showAddButton,
   wallSectionRef,
   onAddClick,
   onEdit,
@@ -99,7 +100,7 @@ export default function MessageWall({
         )}
       </div>
 
-      {!decorationMode && (
+      {showAddButton && (
         <button type="button" className="fab-add" onClick={onAddClick}>
           新增留言
         </button>

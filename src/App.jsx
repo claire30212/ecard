@@ -10,8 +10,9 @@ function readRoute() {
   const params = new URLSearchParams(window.location.search)
   const id = params.get('id')
   const admin = params.get('admin')
+  const recipient = params.get('recipient')
   const view = params.get('view')
-  if (id) return { type: 'card', id, admin }
+  if (id) return { type: 'card', id, admin, recipient }
   if (view === 'my-cards') return { type: 'my-cards' }
   return { type: 'create' }
 }
@@ -39,7 +40,12 @@ export default function App() {
   return (
     <AuthProvider>
       {route.type === 'card' && (
-        <ViewPage key={`${route.id}:${route.admin || ''}`} cardId={route.id} adminKeyFromUrl={route.admin} />
+        <ViewPage
+          key={`${route.id}:${route.admin || ''}:${route.recipient || ''}`}
+          cardId={route.id}
+          adminKeyFromUrl={route.admin}
+          recipientKeyFromUrl={route.recipient}
+        />
       )}
       {route.type === 'my-cards' && <MyCardsPage />}
       {route.type === 'create' && <CreatePage onViewCard={goToCard} />}

@@ -16,8 +16,9 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import EditCardSettingsModal from '../components/EditCardSettingsModal'
 import LayoutPickerModal from '../components/LayoutPickerModal'
 import FloatingEffect from '../components/FloatingEffect'
+import { downloadCardAsPng } from '../lib/downloadCard'
 
-export default function ViewPage({ cardId, adminKeyFromUrl }) {
+export default function ViewPage({ cardId, adminKeyFromUrl, recipientKeyFromUrl }) {
   const [card, setCard] = useState(null)
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
@@ -31,6 +32,8 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   const [decorationMode, setDecorationMode] = useState(false)
   const [showCardSettings, setShowCardSettings] = useState(false)
   const [showLayoutPicker, setShowLayoutPicker] = useState(false)
+  const [wallInView, setWallInView] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const wallRef = useRef(null)
   const coverSectionRef = useRef(null)
   const wallSectionRef = useRef(null)
@@ -69,6 +72,22 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
       cancelled = true
     }
   }, [cardId, adminKeyFromUrl])
+
+  // 訪客連結的「新增留言」只在留言拼貼牆捲動範圍內才出現，不佔用封面
+  // （R11 規格），用 IntersectionObserver 偵測留言牆區塊是否進入畫面。
+  // 依賴要包含 loading：card 這個 state 在 fetchCard 那個 async function
+  // 裡是先 setCard 才 setLoading(false)（中間還有 await fetchMessages），
+  // 如果只依賴 card?.id，這個 effect 會在 loading 還是 true、頁面還顯示
+  // 「載入中」、wallSectionRef 還沒接到真正 DOM 節點的那次 render 就先跑掉，
+  // 之後 loading 變 false、MessageWall 真的掛載時，依賴沒變化就不會重新跑，
+  // observer 永遠觀察不到真正的留言牆
+  useEffect(() => {
+    const el = wallSectionRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return undefined
+    const observer = new IntersectionObserver(([entry]) => setWallInView(entry.isIntersecting), { threshold: 0.05 })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [card?.id, loading])
 
   function showBanner(text) {
     setBanner(text)
@@ -139,6 +158,18 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
     }
   }
 
+  async function handleDownloadCard() {
+    if (downloading) return
+    setDownloading(true)
+    try {
+      await downloadCardAsPng(pageRef.current, card.recipient_name)
+    } catch {
+      showBanner('下載失敗，請稍後再試')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   async function handleAddSubmitted({ authorName, content, photoUrl, stickerId, stickerColor }) {
     const row = await addMessage({ cardId, authorName, content, photoUrl, stickerId, stickerColor })
     setMessages((prev) => [...prev, row])
@@ -178,6 +209,14 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
   const style = getStyle(card.style)
   const themeColors = getThemeColors(card.color_theme, card.color_adjust)
   const themeVars = themeColorsToCssVars(themeColors)
+  // 收件人專屬連結：網址帶的 recipient 參數要跟卡片的 recipient_key 相符，
+  // 才進入「收件人模式」（不顯示新增留言，改顯示下載存檔）。管理連結優先，
+  // 避免建立者自己拿著兩種參數開卡時 UI 互相打架
+  const isRecipientMode = !isAdmin && Boolean(recipientKeyFromUrl) && card.recipient_key === recipientKeyFromUrl
+  // 訪客連結的新增留言只在留言牆捲動進畫面時才出現；管理者跟收件人模式
+  // 不受這個限制影響（管理者維持原本一律看得到，收件人模式本來就不顯示）。
+  // decorationMode 底下維持原本行為：一律不顯示，避免跟下方的裝飾工具列打架
+  const showAddButton = !decorationMode && (isAdmin || (!isRecipientMode && wallInView))
 
   return (
     <div className={`view-page view-page--${category.id}`} style={themeVars} ref={pageRef}>
@@ -240,6 +279,7 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
           recipientName={card.recipient_name}
           decorations={card.decorations}
           decorationMode={decorationMode}
+          showAddButton={showAddButton}
           wallSectionRef={wallSectionRef}
           onAddClick={() => setShowAddForm(true)}
           onEdit={setEditingMessage}
@@ -247,6 +287,16 @@ export default function ViewPage({ cardId, adminKeyFromUrl }) {
           newlyAddedId={newlyAddedId}
         />
       </div>
+
+      {isRecipientMode && (
+        <div className="download-card" data-html2canvas-ignore="true">
+          <p className="download-card__hint">將會存下目前顯示的內容</p>
+          <button type="button" className="download-card__button" onClick={handleDownloadCard} disabled={downloading}>
+            {downloading && <span className="btn-spinner" aria-hidden="true" />}
+            {downloading ? '產生圖片中...' : '下載卡片存檔'}
+          </button>
+        </div>
+      )}
 
       {decorationMode && (
         <div className="decoration-palette">

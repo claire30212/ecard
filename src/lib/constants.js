@@ -16,7 +16,11 @@ export const CATEGORIES = [
   {
     id: 'blessing',
     label: '祝福',
-    colors: { main: '#A8B5A2', sub: '#F5F0EB', accent: '#B8C4CC', ink: '#3E463C' },
+    // accent 原本是 #B8C4CC（淺灰藍），疊在 main #A8B5A2 上當小花插畫圖示
+    // 顏色時對比度只有 1.21（其他三個類別的圖示對比度都在 1.6~3 之間），
+    // 看起來太淡、不清楚。改成同色相但明度壓低的深藍，對比度提升到 3.13，
+    // 跟其他類別圖示的清晰度一致
+    colors: { main: '#A8B5A2', sub: '#F5F0EB', accent: '#36607D', ink: '#3E463C' },
     photoLayout: 'scatter',
     greeting: '獻上祝福',
   },

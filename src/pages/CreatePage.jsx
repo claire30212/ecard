@@ -3,7 +3,7 @@ import { CATEGORIES, STYLES, ILLUSTRATION_VARIANTS, makeIllustrationRef, MAX_NAM
 import { COLOR_THEMES, CATEGORY_DEFAULT_THEME, getThemeColors, themeColorsToCssVars } from '../lib/colorThemes'
 import { createCard } from '../lib/cards'
 import { uploadPhoto, PhotoUploadError } from '../lib/storage'
-import { buildCardLink, buildMyCardsLink } from '../lib/links'
+import { buildCardLink, buildRecipientLink, buildMyCardsLink } from '../lib/links'
 import { useAuth } from '../context/AuthContext'
 import BuiltInIllustration from '../components/BuiltInIllustration'
 import CopyField from '../components/CopyField'
@@ -64,7 +64,7 @@ export default function CreatePage({ onViewCard }) {
         coverPhotoUrl = makeIllustrationRef(categoryId, illustrationVariant)
       }
 
-      const { admin_key } = await createCard({
+      const { admin_key, recipient_key } = await createCard({
         id: cardId,
         creator_id: user.id,
         category: categoryId,
@@ -81,7 +81,7 @@ export default function CreatePage({ onViewCard }) {
         layout_style: 'collage',
       })
 
-      setResult({ id: cardId, adminKey: admin_key })
+      setResult({ id: cardId, adminKey: admin_key, recipientKey: recipient_key })
       setStep(4)
     } catch (err) {
       setError(err instanceof PhotoUploadError ? err.message : '建立卡片失敗，請確認網路連線後再試一次')
@@ -314,9 +314,15 @@ export default function CreatePage({ onViewCard }) {
           <p className="login-page__hint">這張卡片已經自動加進「我的卡片」列表，不用特地記連結。</p>
           <CopyField
             label="訪客連結"
-            hint="這組連結可以分享給親友，讓大家留言"
+            hint="這組連結可以分享給留言的親友，可以留言、上傳照片"
             value={buildCardLink(result.id)}
             tone="guest"
+          />
+          <CopyField
+            label="收件人專屬連結"
+            hint="這組連結給收禮的人本人，完整呈現卡片但不會看到新增留言的按鈕，可以下載卡片存檔"
+            value={buildRecipientLink(result.id, result.recipientKey)}
+            tone="recipient"
           />
           <CopyField
             label="管理連結"

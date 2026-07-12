@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { fetchMyCards, deleteCard } from '../lib/cards'
 import { signOut } from '../lib/auth'
-import { buildCardLink } from '../lib/links'
+import { buildCardLink, buildRecipientLink } from '../lib/links'
 import { copyText } from '../lib/clipboard'
 import { getCategory, getStyle } from '../lib/constants'
 import LoginPage from './LoginPage'
@@ -14,15 +14,24 @@ function formatDate(iso) {
 }
 
 function CardRow({ card, onRequestDelete }) {
-  const [copied, setCopied] = useState(false)
+  const [copiedGuest, setCopiedGuest] = useState(false)
+  const [copiedRecipient, setCopiedRecipient] = useState(false)
   const category = getCategory(card.category)
   const style = getStyle(card.style)
 
   async function handleCopyGuestLink() {
     const ok = await copyText(buildCardLink(card.id))
     if (ok) {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setCopiedGuest(true)
+      setTimeout(() => setCopiedGuest(false), 2000)
+    }
+  }
+
+  async function handleCopyRecipientLink() {
+    const ok = await copyText(buildRecipientLink(card.id, card.recipient_key))
+    if (ok) {
+      setCopiedRecipient(true)
+      setTimeout(() => setCopiedRecipient(false), 2000)
     }
   }
 
@@ -39,7 +48,10 @@ function CardRow({ card, onRequestDelete }) {
           查看
         </a>
         <button type="button" className="btn-chip" onClick={handleCopyGuestLink}>
-          {copied ? '已複製' : '複製訪客連結'}
+          {copiedGuest ? '已複製' : '複製訪客連結'}
+        </button>
+        <button type="button" className="btn-chip" onClick={handleCopyRecipientLink}>
+          {copiedRecipient ? '已複製' : '複製收件人連結'}
         </button>
         <button type="button" className="btn-chip btn-chip--danger" onClick={() => onRequestDelete(card)}>
           刪除

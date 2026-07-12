@@ -119,18 +119,37 @@ function contrastRatio(hexA, hexB) {
   return (l1 + 0.05) / (l2 + 0.05)
 }
 
+// R9/R10 都「修過」祝福類別按鈕看起來像沒反應，但兩次都只在文字色/邊框
+// 補救，沒解決根本問題：fresh 色系的 accent 明度高達 94%（其他三組色系
+// 是 57~64%），這已經不是「文字對比不足」，而是這個顏色本身就是接近
+// 白色，不管疊什麼顏色的文字、加多細的邊框，整塊底色看起來就是「幾乎
+// 沒有顏色」。真正的修法是「用在實心填滿的按鈕/圓點這種需要明顯呈現
+// 『有顏色、可點擊』的地方時，不要直接用原始 accent」，而是把明度夾在
+// 一個上限之內（同色相、飽和度不變，只壓低明度），讓四組色系的按鈕底色
+// 明度都落在同一個範圍內，视觉上都是「明顯的一塊顏色」，不會有某一組
+// 特別淡。上限抓 65%，大約是 warm 系 accent 原本的明度（64.1%），
+// 意即 warm/calm 這兩組本來就過關的色系維持原樣不變。
+const SOLID_FILL_MAX_LIGHTNESS = 65
+
+function vividAccent(hex) {
+  const [h, s, l] = hexToHsl(hex)
+  const cappedL = Math.min(l, SOLID_FILL_MAX_LIGHTNESS)
+  return hslToHex(h, s, cappedL)
+}
+
 // 算出卡片實際要用的一組顏色。ink 刻意不隨 adjust 變動，避免文字對比不足
 export function getThemeColors(themeId, adjust = 0) {
   const theme = getColorTheme(themeId)
   const accent = adjustLightness(theme.accent, adjust)
-  // 「疊在 accent 底色上的文字」該用白色還是 ink 深色，取決於這組 accent
-  // 實際算出來多亮：例如 fresh 系的 accent 接近白色，白字疊上去幾乎看不見
-  // （實測對比度只有 1.13），這時要改用 ink 深色字，對比度才夠（8.64）
-  const onAccent = contrastRatio('#ffffff', accent) >= 2 ? '#ffffff' : theme.ink
+  const accentSolid = vividAccent(accent)
+  // 「疊在 accentSolid 底色上的文字」該用白色還是 ink 深色，取決於這組
+  // 顏色實際算出來多亮
+  const onAccent = contrastRatio('#ffffff', accentSolid) >= 2 ? '#ffffff' : theme.ink
   return {
     main: adjustLightness(theme.main, adjust),
     sub: adjustLightness(theme.sub, adjust),
     accent,
+    accentSolid,
     ink: theme.ink,
     onAccent,
   }
@@ -141,6 +160,7 @@ export function themeColorsToCssVars(colors) {
     '--main': colors.main,
     '--sub': colors.sub,
     '--accent': colors.accent,
+    '--accent-solid': colors.accentSolid,
     '--ink': colors.ink,
     '--on-accent': colors.onAccent || '#fff',
   }
