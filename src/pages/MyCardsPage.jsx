@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { fetchMyCards } from '../lib/cards'
+import { fetchMyCards, deleteCard } from '../lib/cards'
 import { signOut } from '../lib/auth'
 import { buildCardLink } from '../lib/links'
 import { copyText } from '../lib/clipboard'
 import { getCategory, getStyle } from '../lib/constants'
 import LoginPage from './LoginPage'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 function formatDate(iso) {
   const d = new Date(iso)
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`
 }
 
-function CardRow({ card }) {
+function CardRow({ card, onRequestDelete }) {
   const [copied, setCopied] = useState(false)
   const category = getCategory(card.category)
   const style = getStyle(card.style)
@@ -40,6 +41,9 @@ function CardRow({ card }) {
         <button type="button" className="btn-chip" onClick={handleCopyGuestLink}>
           {copied ? '已複製' : '複製訪客連結'}
         </button>
+        <button type="button" className="btn-chip btn-chip--danger" onClick={() => onRequestDelete(card)}>
+          刪除
+        </button>
       </div>
     </li>
   )
@@ -50,6 +54,8 @@ export default function MyCardsPage() {
   const [cards, setCards] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [deletingCard, setDeletingCard] = useState(null)
+  const [deleteError, setDeleteError] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -69,6 +75,18 @@ export default function MyCardsPage() {
       cancelled = true
     }
   }, [user])
+
+  async function handleDeleteConfirmed() {
+    const target = deletingCard
+    setDeletingCard(null)
+    setDeleteError('')
+    try {
+      await deleteCard(target.id)
+      setCards((prev) => prev.filter((c) => c.id !== target.id))
+    } catch {
+      setDeleteError('刪除失敗，請重新整理頁面後再試')
+    }
+  }
 
   if (authLoading) {
     return <div className="page-status">載入中...</div>
@@ -100,6 +118,7 @@ export default function MyCardsPage() {
 
       {loading && <div className="page-status">載入中...</div>}
       {error && <p className="field__error">{error}</p>}
+      {deleteError && <p className="field__error">{deleteError}</p>}
 
       {!loading && !error && cards.length === 0 && (
         <p className="login-page__hint">還沒有建立過卡片，回首頁開始做第一張吧。</p>
@@ -108,9 +127,20 @@ export default function MyCardsPage() {
       {!loading && cards.length > 0 && (
         <ul className="my-cards__list">
           {cards.map((card) => (
-            <CardRow key={card.id} card={card} />
+            <CardRow key={card.id} card={card} onRequestDelete={setDeletingCard} />
           ))}
         </ul>
+      )}
+
+      {deletingCard && (
+        <ConfirmDialog
+          title="刪除卡片"
+          message={`此操作無法復原，確定要刪除給「${deletingCard.recipient_name}」的這張卡片與所有留言嗎？`}
+          confirmLabel="刪除"
+          danger
+          onConfirm={handleDeleteConfirmed}
+          onCancel={() => setDeletingCard(null)}
+        />
       )}
     </div>
   )

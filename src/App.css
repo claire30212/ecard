@@ -116,6 +116,9 @@
   background: var(--accent, #c9a97e);
   color: var(--on-accent, #fff);
   border-color: var(--accent, #c9a97e);
+  /* 同 .btn--primary：accent 太淺時底色跟邊框都融入背景，補固定深淺的
+     內縮陰影確保形狀看得出來 */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 .btn-chip--danger {
   border-color: #c98d84;
@@ -215,10 +218,15 @@
 .step-dot--active {
   background: var(--accent, #c9a97e);
   color: var(--on-accent, #fff);
+  /* 圓點本身很小，accent 太淺時整個圓點會融入背景看起來像沒有目前步驟的
+     樣子（R10 回報的「祝福類別下 1234 圓點沒有顏色」），補固定深淺的
+     內縮陰影確保形狀看得出來 */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 .step-dot--done {
   background: color-mix(in srgb, var(--accent, #c9a97e) 40%, #ece4d8);
-  color: #fff;
+  color: var(--on-accent, #fff);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 .create-page__mycards-link {
   display: inline-block;
@@ -361,7 +369,10 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 .style-card--selected {
-  border-color: var(--accent, #c9a97e);
+  /* 用 --ink 而非 --accent：這張卡片底色固定是 #fffdfa 近白色，fresh 色系
+     的 accent 也接近白色，選取邊框幾乎看不出來；ink 對任何色系都是深色，
+     選取狀態一定看得清楚 */
+  border-color: var(--ink, #5c4a3a);
 }
 .style-card__label {
   font-size: 1.05rem;
@@ -398,10 +409,12 @@
 .illustration-option__icon {
   width: 100%;
   height: 100%;
-  color: var(--accent, #c9a97e);
+  /* 同樣的道理：圖示疊在固定 #fffdfa 近白色的方框上，fresh 色系的 accent
+     太淺會看不清楚，改用對比穩定的 --ink */
+  color: var(--ink, #5c4a3a);
 }
 .illustration-option--selected {
-  border-color: var(--accent, #c9a97e);
+  border-color: var(--ink, #5c4a3a);
   background: color-mix(in srgb, var(--accent, #c9a97e) 12%, #fffdfa);
 }
 
@@ -1043,7 +1056,7 @@
   cursor: pointer;
 }
 .sticker-picker__clear--selected {
-  border-color: var(--accent, #c9a97e);
+  border-color: var(--ink, #5c4a3a);
   color: var(--ink, #5c4a3a);
   background: color-mix(in srgb, var(--accent, #c9a97e) 15%, #fffdfa);
 }
@@ -1066,6 +1079,9 @@
   border-color: var(--accent, #c9a97e);
   background: var(--accent, #c9a97e);
   color: var(--on-accent, #fff);
+  /* accent 太淺（例如 fresh 系）時底色會融入白色背景，補一圈固定深淺的
+     內縮陰影，不管哪個色系分頁的形狀都看得出來 */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 .sticker-picker__grid {
   display: grid;
@@ -1089,7 +1105,7 @@
   border-color: color-mix(in srgb, var(--accent, #c9a97e) 70%, transparent);
 }
 .sticker-picker__item--selected {
-  border-color: var(--accent, #c9a97e);
+  border-color: var(--ink, #5c4a3a);
   background: color-mix(in srgb, var(--accent, #c9a97e) 15%, #fffdfa);
 }
 .sticker-picker__icon {
@@ -1103,7 +1119,13 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  /* 一定要跟下面 .decoration-layer--interactive 用同一個 z-index：這裡是
+     離開裝飾模式後、一般瀏覽畫面實際會用到的唯讀渲染層。原本這裡是 0，
+     比 .cover（z-index:1）、.message-wall__inner（z-index:1）都低，
+     編輯當下疊在互動層（z-index:5）之上看得到，一按「完成裝飾」切回這層
+     唯讀渲染就被照片/留言卡片蓋住——貼紙並沒有消失，只是編輯模式跟一般
+     瀏覽模式的圖層層級沒對齊 */
+  z-index: 5;
 }
 .decoration-layer__item {
   position: absolute;
@@ -1140,8 +1162,9 @@
 
 /* ===== 裝飾模式：所見即所得（直接疊在真實卡片畫面上） ===== */
 .decoration-layer--interactive {
+  /* z-index 已經跟上面 .decoration-layer 統一成同一個值，這裡不用再另外
+     設定，避免兩個模式的圖層層級以後又不小心分岔 */
   pointer-events: none;
-  z-index: 5;
 }
 .decoration-layer__item--draggable {
   width: 48px;

@@ -48,6 +48,18 @@ export async function fetchMyCards() {
   }))
 }
 
+// 「我的卡片」列表用登入身份刪除自己的卡片：RLS 直接用 auth.uid() = creator_id
+// 判斷權限（R10 新增的 policy），不用像留言刪除那樣額外走 admin_key。
+// ecard_messages 對 ecard_cards 的外鍵是 ON DELETE CASCADE，刪卡片時底下的
+// 留言會由資料庫自動一併清除
+export async function deleteCard(cardId) {
+  // 特地帶 .select('id') 確認真的刪到列：純 .delete() 在 RLS 擋下、0 筆符合
+  // 條件時不會回傳錯誤，會誤以為刪除成功，帶 select 才能看到實際刪了幾筆
+  const { data, error } = await supabase.from('ecard_cards').delete().eq('id', cardId).select('id')
+  if (error) throw error
+  if (!data || data.length === 0) throw new Error('刪除失敗，請確認這張卡片是否為你本人建立')
+}
+
 export async function fetchMessages(cardId) {
   const { data, error } = await supabase
     .from('ecard_messages')
